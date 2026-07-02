@@ -8,58 +8,87 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   Text="Live Camera"
-                   Style="{StaticResource PageTitleStyle}" />
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Live Camera"
+                       Style="{StaticResource PageTitleStyle}" />
+            <TextBlock Text="Preview, detection status, and current packing session."
+                       Style="{StaticResource PageSubtitleStyle}" />
+        </StackPanel>
 
         <Border Grid.Row="1"
-                Background="{StaticResource PackWatchSurfaceBrush}"
-                BorderBrush="{StaticResource PackWatchBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="18">
+                Style="{StaticResource CardStyle}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="24" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="360" />
                 </Grid.ColumnDefinitions>
 
                 <Border Grid.Column="0"
                         Background="#101820"
-                        CornerRadius="6"
-                        MinHeight="420">
-                    <TextBlock Text="{Binding PreviewMessage}"
-                               Foreground="#DDE7EC"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               TextWrapping="Wrap"
-                               TextAlignment="Center"
-                               Margin="36" />
+                        CornerRadius="8"
+                        MinHeight="460">
+                    <Grid>
+                        <Border HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Background="#243642"
+                                CornerRadius="6"
+                                Padding="10,6"
+                                Margin="14">
+                            <TextBlock Text="{Binding Fps, StringFormat=FPS {0}}"
+                                       Foreground="#DDE7EC"
+                                       Typography.NumeralAlignment="Tabular" />
+                        </Border>
+
+                        <TextBlock Text="{Binding PreviewMessage}"
+                                   Foreground="#DDE7EC"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"
+                                   Margin="42"
+                                   MaxWidth="420" />
+                    </Grid>
                 </Border>
 
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="Camera Status" Foreground="{StaticResource PackWatchMutedTextBrush}" />
-                    <TextBlock Text="{Binding CameraStatus}" FontWeight="SemiBold" Margin="0,4,0,18" />
+                <Border Grid.Column="2"
+                        Background="{StaticResource PackWatchSoftSurfaceBrush}"
+                        CornerRadius="8"
+                        Padding="18">
+                    <StackPanel>
+                        <TextBlock Text="Session"
+                                   Style="{StaticResource SectionTitleStyle}" />
 
-                    <TextBlock Text="Recording Status" Foreground="{StaticResource PackWatchMutedTextBrush}" />
-                    <TextBlock Text="{Binding RecordingStatus}" FontWeight="SemiBold" Margin="0,4,0,18" />
+                        <TextBlock Text="Camera Status" Style="{StaticResource FieldLabelStyle}" />
+                        <TextBlock Text="{Binding CameraStatus}" Style="{StaticResource MetricValueStyle}" />
 
-                    <TextBlock Text="Current Order" Foreground="{StaticResource PackWatchMutedTextBrush}" />
-                    <TextBlock Text="{Binding CurrentOrder}" FontSize="20" FontWeight="SemiBold" Margin="0,4,0,18" />
+                        <TextBlock Text="Recording Status" Style="{StaticResource FieldLabelStyle}" />
+                        <TextBlock Text="{Binding RecordingStatus}" Style="{StaticResource MetricValueStyle}" />
 
-                    <TextBlock Text="Recording Time" Foreground="{StaticResource PackWatchMutedTextBrush}" />
-                    <TextBlock Text="{Binding RecordingTime}" FontSize="20" FontWeight="SemiBold" Margin="0,4,0,18" />
+                        <TextBlock Text="Current Order" Style="{StaticResource FieldLabelStyle}" />
+                        <TextBlock Text="{Binding CurrentOrder}" Style="{StaticResource MetricValueStyle}" />
 
-                    <TextBlock Text="Last Barcode" Foreground="{StaticResource PackWatchMutedTextBrush}" />
-                    <TextBlock Text="{Binding LastBarcode}" FontWeight="SemiBold" Margin="0,4,0,18" />
+                        <TextBlock Text="Recording Time" Style="{StaticResource FieldLabelStyle}" />
+                        <TextBlock Text="{Binding RecordingTime}" Style="{StaticResource MetricValueStyle}" />
 
-                    <TextBlock Text="FPS" Foreground="{StaticResource PackWatchMutedTextBrush}" />
-                    <TextBlock Text="{Binding Fps}" FontWeight="SemiBold" Margin="0,4,0,18" />
+                        <Grid Margin="0,2,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Resolution" Foreground="{StaticResource PackWatchMutedTextBrush}" />
-                    <TextBlock Text="{Binding Resolution}" FontWeight="SemiBold" Margin="0,4,0,0" />
-                </StackPanel>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Last Barcode" Style="{StaticResource FieldLabelStyle}" />
+                                <TextBlock Text="{Binding LastBarcode}" FontWeight="SemiBold" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                <TextBlock Text="Resolution" Style="{StaticResource FieldLabelStyle}" />
+                                <TextBlock Text="{Binding Resolution}" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
             </Grid>
         </Border>
 
@@ -69,13 +98,11 @@
                     Margin="0,18,0,0">
             <Button Content="Start"
                     Command="{Binding StartCommand}"
-                    MinWidth="120"
-                    Padding="18,10"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     Margin="0,0,12,0" />
             <Button Content="Stop"
                     Command="{Binding StopCommand}"
-                    MinWidth="120"
-                    Padding="18,10" />
+                    Style="{StaticResource SecondaryButtonStyle}" />
         </StackPanel>
     </Grid>
 </UserControl>

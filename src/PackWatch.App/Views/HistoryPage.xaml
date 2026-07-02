@@ -8,27 +8,29 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   Text="History"
-                   Style="{StaticResource PageTitleStyle}" />
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="History"
+                       Style="{StaticResource PageTitleStyle}" />
+            <TextBlock Text="Search recorded orders and open the saved packing videos."
+                       Style="{StaticResource PageSubtitleStyle}" />
+        </StackPanel>
 
         <Border Grid.Row="1"
-                Background="{StaticResource PackWatchSurfaceBrush}"
-                BorderBrush="{StaticResource PackWatchBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="16"
+                Style="{StaticResource CardStyle}"
                 Margin="0,0,0,16">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="180" />
-                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="18" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="150" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Date Filter" Foreground="{StaticResource PackWatchMutedTextBrush}" />
-                    <ComboBox SelectedValue="{Binding SelectedDateFilter}" SelectedValuePath="Content" Margin="0,6,0,0">
+                    <TextBlock Text="Date Filter" Style="{StaticResource FieldLabelStyle}" />
+                    <ComboBox SelectedValue="{Binding SelectedDateFilter}"
+                              SelectedValuePath="Content">
                         <ComboBoxItem Content="Today" />
                         <ComboBoxItem Content="Yesterday" />
                         <ComboBoxItem Content="This Week" />
@@ -37,22 +39,56 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="Search Order" Foreground="{StaticResource PackWatchMutedTextBrush}" />
-                    <TextBox Text="{Binding SearchOrderCode, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" />
+                    <TextBlock Text="Search Order" Style="{StaticResource FieldLabelStyle}" />
+                    <TextBox Text="{Binding SearchOrderCode, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
+
+                <Button Grid.Column="4"
+                        Content="Open Folder"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        VerticalAlignment="Bottom" />
             </Grid>
         </Border>
 
         <Border Grid.Row="2"
-                Background="{StaticResource PackWatchSurfaceBrush}"
-                BorderBrush="{StaticResource PackWatchBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="16">
-            <TextBlock Text="{Binding EmptyStateMessage}"
-                       Foreground="{StaticResource PackWatchMutedTextBrush}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
+                Style="{StaticResource CardStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="90" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="120" />
+                        <ColumnDefinition Width="180" />
+                        <ColumnDefinition Width="110" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Thumbnail" Style="{StaticResource FieldLabelStyle}" />
+                    <TextBlock Grid.Column="1" Text="Order Code" Style="{StaticResource FieldLabelStyle}" />
+                    <TextBlock Grid.Column="2" Text="Start Time" Style="{StaticResource FieldLabelStyle}" />
+                    <TextBlock Grid.Column="3" Text="End Time" Style="{StaticResource FieldLabelStyle}" />
+                    <TextBlock Grid.Column="4" Text="Duration" Style="{StaticResource FieldLabelStyle}" />
+                    <TextBlock Grid.Column="5" Text="Video Path" Style="{StaticResource FieldLabelStyle}" />
+                    <TextBlock Grid.Column="6" Text="Action" Style="{StaticResource FieldLabelStyle}" />
+                </Grid>
+
+                <Border Grid.Row="1"
+                        Background="{StaticResource PackWatchSoftSurfaceBrush}"
+                        CornerRadius="8"
+                        Padding="24">
+                    <TextBlock Text="{Binding EmptyStateMessage}"
+                               Foreground="{StaticResource PackWatchMutedTextBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center" />
+                </Border>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

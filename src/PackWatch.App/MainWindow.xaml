@@ -12,25 +12,31 @@
         Width="1180">
     <Grid Background="{StaticResource PackWatchBackgroundBrush}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="240" />
+            <ColumnDefinition Width="252" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0"
-                Background="{StaticResource PackWatchSurfaceBrush}"
-                BorderBrush="{StaticResource PackWatchBorderBrush}"
+                Background="#FAFCFD"
+                BorderBrush="#E1EAEE"
                 BorderThickness="0,0,1,0"
-                Padding="20">
+                Padding="22">
             <DockPanel LastChildFill="True">
                 <StackPanel DockPanel.Dock="Top">
-                    <TextBlock Text="PackWatch"
-                               FontSize="28"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource PackWatchAccentDarkBrush}"
-                               Margin="0,0,0,4" />
-                    <TextBlock Text="Packing recorder"
-                               Foreground="{StaticResource PackWatchMutedTextBrush}"
-                               Margin="0,0,0,32" />
+                    <Border Background="{StaticResource PackWatchAccentDarkBrush}"
+                            CornerRadius="10"
+                            Padding="14"
+                            Margin="0,0,0,28">
+                        <StackPanel>
+                            <TextBlock Text="PackWatch"
+                                       FontSize="26"
+                                       FontWeight="SemiBold"
+                                       Foreground="White"
+                                       Margin="0,0,0,4" />
+                            <TextBlock Text="Packing recorder"
+                                       Foreground="#CFE7EF" />
+                        </StackPanel>
+                    </Border>
 
                     <Button Content="Home"
                             Command="{Binding NavigateCommand}"
@@ -46,15 +52,19 @@
                             Style="{StaticResource NavigationButtonStyle}" />
                 </StackPanel>
 
-                <TextBlock DockPanel.Dock="Bottom"
-                           Text="{Binding StatusMessage}"
-                           Foreground="{StaticResource PackWatchMutedTextBrush}"
-                           TextWrapping="Wrap" />
+                <Border DockPanel.Dock="Bottom"
+                        Background="{StaticResource PackWatchSoftSurfaceBrush}"
+                        CornerRadius="8"
+                        Padding="12">
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="{StaticResource PackWatchMutedTextBrush}"
+                               TextWrapping="Wrap" />
+                </Border>
             </DockPanel>
         </Border>
 
         <ContentControl Grid.Column="1"
                         Content="{Binding CurrentPageViewModel}"
-                        Margin="28" />
+                        Margin="30" />
     </Grid>
 </Window>
