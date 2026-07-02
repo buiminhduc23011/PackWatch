@@ -1,0 +1,46 @@
+<UserControl x:Class="PackWatch.App.Views.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Settings"
+                   Style="{StaticResource PageTitleStyle}" />
+
+        <Border Grid.Row="1"
+                Background="{StaticResource PackWatchSurfaceBrush}"
+                BorderBrush="{StaticResource PackWatchBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="18">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Camera" Foreground="{StaticResource PackWatchMutedTextBrush}" Margin="0,0,0,16" />
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CameraMode}" FontWeight="SemiBold" Margin="0,0,0,16" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Save Folder" Foreground="{StaticResource PackWatchMutedTextBrush}" Margin="0,0,0,16" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SaveFolder}" FontWeight="SemiBold" Margin="0,0,0,16" />
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Stable Barcode Time" Foreground="{StaticResource PackWatchMutedTextBrush}" Margin="0,0,0,16" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding StableBarcodeMilliseconds, StringFormat={}{0} ms}" FontWeight="SemiBold" Margin="0,0,0,16" />
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Logging" Foreground="{StaticResource PackWatchMutedTextBrush}" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LoggingLevel}" FontWeight="SemiBold" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

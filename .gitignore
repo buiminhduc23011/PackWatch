@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+.vscode/
+TestResults/
+Logs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates

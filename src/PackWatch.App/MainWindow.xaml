@@ -1,0 +1,60 @@
+<Window x:Class="PackWatch.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:application="clr-namespace:PackWatch.Application.Navigation;assembly=PackWatch.Application"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="PackWatch"
+        MinHeight="720"
+        MinWidth="1120"
+        Height="760"
+        Width="1180">
+    <Grid Background="{StaticResource PackWatchBackgroundBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0"
+                Background="{StaticResource PackWatchSurfaceBrush}"
+                BorderBrush="{StaticResource PackWatchBorderBrush}"
+                BorderThickness="0,0,1,0"
+                Padding="20">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="PackWatch"
+                               FontSize="28"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource PackWatchAccentDarkBrush}"
+                               Margin="0,0,0,4" />
+                    <TextBlock Text="Packing recorder"
+                               Foreground="{StaticResource PackWatchMutedTextBrush}"
+                               Margin="0,0,0,32" />
+
+                    <Button Content="Home"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Static application:ApplicationPage.Home}"
+                            Style="{StaticResource NavigationButtonStyle}" />
+                    <Button Content="History"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Static application:ApplicationPage.History}"
+                            Style="{StaticResource NavigationButtonStyle}" />
+                    <Button Content="Settings"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Static application:ApplicationPage.Settings}"
+                            Style="{StaticResource NavigationButtonStyle}" />
+                </StackPanel>
+
+                <TextBlock DockPanel.Dock="Bottom"
+                           Text="{Binding StatusMessage}"
+                           Foreground="{StaticResource PackWatchMutedTextBrush}"
+                           TextWrapping="Wrap" />
+            </DockPanel>
+        </Border>
+
+        <ContentControl Grid.Column="1"
+                        Content="{Binding CurrentPageViewModel}"
+                        Margin="28" />
+    </Grid>
+</Window>
