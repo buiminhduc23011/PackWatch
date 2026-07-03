@@ -25,29 +25,20 @@
                     <ColumnDefinition Width="22" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="22" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="22" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
 
-                <Border Grid.Row="0"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="3"
+                <!-- LEFT COLUMN: CAMERA & RECORDING -->
+                <Border Grid.Column="0"
                         Style="{StaticResource CardStyle}">
                     <StackPanel>
-                        <Grid Margin="0,0,0,12">
+                        <!-- Section Header -->
+                        <Grid Margin="0,0,0,14">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-
-                            <TextBlock Text="Shared Camera Source"
+                            <TextBlock Text="Camera &amp; Recording"
                                        Style="{StaticResource SectionTitleStyle}"
                                        Margin="0" />
-
                             <Border Grid.Column="1"
                                     Style="{StaticResource CardBadgeStyle}"
                                     HorizontalAlignment="Right">
@@ -56,10 +47,11 @@
                             </Border>
                         </Grid>
 
-                        <TextBlock Text="This single source is reused by PackWatch for live preview and for the recorded session artifact."
+                        <TextBlock Text="Configure your camera source and recording parameters."
                                    Style="{StaticResource FieldHelpStyle}"
-                                   Margin="0,0,0,14" />
+                                   Margin="0,0,0,16" />
 
+                        <!-- Source mode -->
                         <Border Style="{StaticResource InsetCardStyle}"
                                 Margin="0,0,0,14">
                             <StackPanel>
@@ -73,46 +65,19 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Dynamic Source Settings -->
                         <Grid Margin="0,0,0,14">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.3*" />
-                                <ColumnDefinition Width="18" />
-                                <ColumnDefinition Width="0.9*" />
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Column="0"
-                                    Style="{StaticResource InsetCardStyle}"
+                            <Border Style="{StaticResource InsetCardStyle}"
                                     Visibility="{Binding IsWebcamCamera, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <StackPanel>
                                     <TextBlock Text="Webcam source"
                                                Style="{StaticResource FieldLabelStyle}" />
                                     <ComboBox ItemsSource="{Binding WebcamProfiles}"
-                                              SelectedItem="{Binding SelectedWebcamProfile}"
-                                              Margin="0,0,0,12" />
-
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="150" />
-                                            <ColumnDefinition Width="12" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="Device index"
-                                                       Style="{StaticResource FieldLabelStyle}" />
-                                            <TextBox Text="{Binding WebcamDeviceIndex, UpdateSourceTrigger=PropertyChanged}" />
-                                        </StackPanel>
-
-                                        <TextBlock Grid.Column="2"
-                                                   Text="{Binding CameraQuickTestDescription}"
-                                                   Style="{StaticResource FieldHelpStyle}"
-                                                   Margin="0,18,0,0" />
-                                    </Grid>
+                                              SelectedItem="{Binding SelectedWebcamProfile}"/>
                                 </StackPanel>
                             </Border>
 
-                            <Border Grid.Column="0"
-                                    Style="{StaticResource InsetCardStyle}"
+                            <Border Style="{StaticResource InsetCardStyle}"
                                     Visibility="{Binding IsRtspCamera, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <StackPanel>
                                     <TextBlock Text="RTSP source"
@@ -144,27 +109,75 @@
                                     </Grid>
                                 </StackPanel>
                             </Border>
-
-                            <Border Grid.Column="2"
-                                    Style="{StaticResource InsetCardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="What PackWatch will do"
-                                               Style="{StaticResource FieldLabelStyle}" />
-                                    <TextBlock Text="The source you choose here is the one Home will use for live checks and the same source label will be written into the recorded session artifact."
-                                               Style="{StaticResource CardSummaryStyle}"
-                                               Margin="0,0,0,12" />
-                                    <Button Content="Use Laptop Webcam"
-                                            Command="{Binding UseLaptopWebcamQuickTestCommand}"
-                                            Style="{StaticResource PrimaryButtonStyle}"
-                                            HorizontalAlignment="Left"
-                                            MinWidth="166" />
-                                    <TextBlock Text="Use this when you want the quickest desk test on the same machine without bouncing between separate live and record sources."
-                                               Style="{StaticResource FieldHelpStyle}"
-                                               Margin="0,10,0,0" />
-                                </StackPanel>
-                            </Border>
                         </Grid>
 
+                        <!-- Save Folder -->
+                        <Border Style="{StaticResource InsetCardStyle}"
+                                Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="Save folder"
+                                           Style="{StaticResource FieldLabelStyle}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding SaveFolder, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <Button Grid.Column="2"
+                                            Content="Open"
+                                            Command="{Binding OpenSaveFolderCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            MinWidth="80" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- FPS & Resolution -->
+                        <Grid Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="FPS"
+                                           Style="{StaticResource FieldLabelStyle}" />
+                                <ComboBox ItemsSource="{Binding FramesPerSecondOptions}"
+                                          SelectedItem="{Binding FramesPerSecond}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Resolution"
+                                           Style="{StaticResource FieldLabelStyle}" />
+                                <ComboBox ItemsSource="{Binding ResolutionOptions}"
+                                          SelectedItem="{Binding Resolution}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Bitrate & Video Format -->
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Bitrate Kbps"
+                                           Style="{StaticResource FieldLabelStyle}" />
+                                <TextBox Text="{Binding BitrateKbps, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Video format"
+                                           Style="{StaticResource FieldLabelStyle}" />
+                                <ComboBox ItemsSource="{Binding VideoFormatOptions}"
+                                          SelectedItem="{Binding VideoFormat}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Connection Controls -->
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Right">
                             <Button Content="Test Source"
@@ -178,138 +191,36 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="2"
-                        Grid.Column="0"
+                <!-- RIGHT COLUMN: BARCODE & OPERATIONS -->
+                <Border Grid.Column="2"
                         Style="{StaticResource CardStyle}">
                     <StackPanel>
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Text="Recording"
-                                       Style="{StaticResource SectionTitleStyle}"
-                                       Margin="0" />
-
-                            <Border Grid.Column="1"
-                                    Style="{StaticResource CardBadgeStyle}"
-                                    HorizontalAlignment="Right">
-                                <TextBlock Text="{Binding RecordingBadge}"
-                                           Style="{StaticResource CardBadgeTextStyle}" />
-                            </Border>
-                        </Grid>
-
-                        <TextBlock Text="Tune the capture profile once, then keep preview and saved evidence consistent across operator checks."
-                                   Style="{StaticResource FieldHelpStyle}"
-                                   Margin="0,0,0,14" />
-
-                        <Border Style="{StaticResource InsetCardStyle}"
-                                Margin="0,0,0,14">
-                            <StackPanel>
-                                <TextBlock Text="Capture profile"
-                                           Style="{StaticResource FieldLabelStyle}" />
-                                <TextBlock Text="{Binding RecordingSummary}"
-                                           Style="{StaticResource CardSummaryStyle}"
-                                           Margin="0,0,0,12" />
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel Grid.Column="0"
-                                                Margin="0,0,10,0">
-                                        <TextBlock Text="Save folder"
-                                                   Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding SaveFolder, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-
-                                    <Button Grid.Column="1"
-                                            Content="Open"
-                                            Command="{Binding OpenSaveFolderCommand}"
-                                            Style="{StaticResource SecondaryButtonStyle}"
-                                            VerticalAlignment="Bottom"
-                                            MinWidth="94" />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
+                        <!-- Section Header: Barcode -->
                         <Grid Margin="0,0,0,14">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="14" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="FPS"
-                                           Style="{StaticResource FieldLabelStyle}" />
-                                <ComboBox ItemsSource="{Binding FramesPerSecondOptions}"
-                                          SelectedItem="{Binding FramesPerSecond}" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Resolution"
-                                           Style="{StaticResource FieldLabelStyle}" />
-                                <ComboBox ItemsSource="{Binding ResolutionOptions}"
-                                          SelectedItem="{Binding Resolution}" />
-                            </StackPanel>
-                        </Grid>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="14" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Bitrate Kbps"
-                                           Style="{StaticResource FieldLabelStyle}" />
-                                <TextBox Text="{Binding BitrateKbps, UpdateSourceTrigger=PropertyChanged}" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Video format"
-                                           Style="{StaticResource FieldLabelStyle}" />
-                                <ComboBox ItemsSource="{Binding VideoFormatOptions}"
-                                          SelectedItem="{Binding VideoFormat}" />
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Row="2"
-                        Grid.Column="2"
-                        Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-
-                            <TextBlock Text="Barcode ROI"
+                            <TextBlock Text="Barcode &amp; System"
                                        Style="{StaticResource SectionTitleStyle}"
                                        Margin="0" />
-
                             <Border Grid.Column="1"
                                     Style="{StaticResource CardBadgeStyle}"
                                     HorizontalAlignment="Right">
-                                <TextBlock Text="{Binding StableBarcodeMilliseconds, StringFormat={}{0:0} ms}"
+                                <TextBlock Text="{Binding BarcodeTypesSummary}"
                                            Style="{StaticResource CardBadgeTextStyle}" />
                             </Border>
                         </Grid>
 
-                        <TextBlock Text="Keep the scanning window tight so preview stays responsive and barcode locking remains predictable."
+                        <TextBlock Text="Set up barcode ROI limits, active symbologies, and logging policy."
                                    Style="{StaticResource FieldHelpStyle}"
-                                   Margin="0,0,0,14" />
+                                   Margin="0,0,0,16" />
 
+                        <!-- Region of Interest -->
                         <Border Style="{StaticResource InsetCardStyle}"
                                 Margin="0,0,0,14">
                             <StackPanel>
-                                <TextBlock Text="Current region"
+                                <TextBlock Text="Scan region (ROI)"
                                            Style="{StaticResource FieldLabelStyle}" />
                                 <TextBlock Text="{Binding RoiSummary}"
                                            Style="{StaticResource CardSummaryStyle}"
@@ -318,46 +229,45 @@
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="12" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="12" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="12" />
-                                        <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="X"
-                                                   Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding RoiX, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Y"
-                                                   Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding RoiY, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="4">
-                                        <TextBlock Text="Width"
-                                                   Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding RoiWidth, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="6">
-                                        <TextBlock Text="Height"
-                                                   Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding RoiHeight, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
+                                    <Grid Grid.Column="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="X" Style="{StaticResource FieldLabelStyle}" />
+                                            <TextBox Text="{Binding RoiX, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Y" Style="{StaticResource FieldLabelStyle}" />
+                                            <TextBox Text="{Binding RoiY, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="4">
+                                            <TextBlock Text="W" Style="{StaticResource FieldLabelStyle}" />
+                                            <TextBox Text="{Binding RoiWidth, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="6">
+                                            <TextBlock Text="H" Style="{StaticResource FieldLabelStyle}" />
+                                            <TextBox Text="{Binding RoiHeight, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                    </Grid>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
-                        <Border Style="{StaticResource InsetCardStyle}">
+                        <!-- Stable Window -->
+                        <Border Style="{StaticResource InsetCardStyle}"
+                                Margin="0,0,0,14">
                             <StackPanel>
                                 <TextBlock Text="Stable detection window"
                                            Style="{StaticResource FieldLabelStyle}" />
-                                <Grid>
+                                <Grid Margin="0,0,0,6">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="82" />
@@ -376,98 +286,50 @@
                                                FontWeight="SemiBold"
                                                Typography.NumeralAlignment="Tabular" />
                                 </Grid>
-
-                                <TextBlock Text="Only the ROI is scanned, which keeps CPU use predictable and helps reduce false positives."
+                                <TextBlock Text="Keep the scanning window tight and detection stable for fast lock-ons."
                                            Style="{StaticResource FieldHelpStyle}" />
                             </StackPanel>
                         </Border>
-                    </StackPanel>
-                </Border>
 
-                <Border Grid.Row="4"
-                        Grid.Column="0"
-                        Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Text="Barcode Types"
-                                       Style="{StaticResource SectionTitleStyle}"
-                                       Margin="0" />
-
-                            <Border Grid.Column="1"
-                                    Style="{StaticResource CardBadgeStyle}"
-                                    HorizontalAlignment="Right">
-                                <TextBlock Text="{Binding BarcodeTypesSummary}"
-                                           Style="{StaticResource CardBadgeTextStyle}" />
-                            </Border>
-                        </Grid>
-
-                        <TextBlock Text="Enable only the formats used on your packing line so the detector spends less time on irrelevant candidates."
-                                   Style="{StaticResource FieldHelpStyle}"
-                                   Margin="0,0,0,14" />
-
-                        <Border Style="{StaticResource InsetCardStyle}">
-                            <UniformGrid Columns="2">
-                                <CheckBox Content="QR Code"
-                                          IsChecked="{Binding EnableQrCode}" />
-                                <CheckBox Content="Code128"
-                                          IsChecked="{Binding EnableCode128}" />
-                                <CheckBox Content="Code39"
-                                          IsChecked="{Binding EnableCode39}" />
-                                <CheckBox Content="EAN13"
-                                          IsChecked="{Binding EnableEan13}" />
-                            </UniformGrid>
-                        </Border>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Row="4"
-                        Grid.Column="2"
-                        Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Text="Operations"
-                                       Style="{StaticResource SectionTitleStyle}"
-                                       Margin="0" />
-
-                            <Border Grid.Column="1"
-                                    Style="{StaticResource CardBadgeStyle}"
-                                    HorizontalAlignment="Right">
-                                <TextBlock Text="{Binding RetentionSummary}"
-                                           Style="{StaticResource CardBadgeTextStyle}" />
-                            </Border>
-                        </Grid>
-
+                        <!-- Barcode Types -->
                         <Border Style="{StaticResource InsetCardStyle}"
                                 Margin="0,0,0,14">
                             <StackPanel>
-                                <TextBlock Text="Delete videos after"
-                                           Style="{StaticResource FieldLabelStyle}" />
-                                <ComboBox ItemsSource="{Binding RetentionOptions}"
-                                          SelectedItem="{Binding RetentionPolicy}" />
-                                <TextBlock Text="Keep retention short on test machines so local validation runs do not accumulate forever."
-                                           Style="{StaticResource FieldHelpStyle}" />
+                                <TextBlock Text="Supported Symbologies"
+                                           Style="{StaticResource FieldLabelStyle}"
+                                           Margin="0,0,0,8" />
+                                <UniformGrid Columns="2">
+                                    <CheckBox Content="QR Code" IsChecked="{Binding EnableQrCode}" />
+                                    <CheckBox Content="Code128" IsChecked="{Binding EnableCode128}" />
+                                    <CheckBox Content="Code39" IsChecked="{Binding EnableCode39}" />
+                                    <CheckBox Content="EAN13" IsChecked="{Binding EnableEan13}" />
+                                </UniformGrid>
                             </StackPanel>
                         </Border>
 
+                        <!-- System Operations -->
                         <Border Style="{StaticResource InsetCardStyle}">
-                            <StackPanel>
-                                <TextBlock Text="Logging level"
-                                           Style="{StaticResource FieldLabelStyle}" />
-                                <ComboBox ItemsSource="{Binding LoggingLevelOptions}"
-                                          SelectedItem="{Binding LoggingLevel}" />
-                                <TextBlock Text="Verbose helps while tuning the shared camera source. Raise the threshold later when the workflow becomes stable."
-                                           Style="{StaticResource FieldHelpStyle}" />
-                            </StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="14" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Auto-delete"
+                                               Style="{StaticResource FieldLabelStyle}" />
+                                    <ComboBox ItemsSource="{Binding RetentionOptions}"
+                                              SelectedItem="{Binding RetentionPolicy}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Logging"
+                                               Style="{StaticResource FieldLabelStyle}" />
+                                    <ComboBox ItemsSource="{Binding LoggingLevelOptions}"
+                                              SelectedItem="{Binding LoggingLevel}" />
+                                </StackPanel>
+                            </Grid>
                         </Border>
                     </StackPanel>
                 </Border>

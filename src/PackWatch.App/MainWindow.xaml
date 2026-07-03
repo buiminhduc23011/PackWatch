@@ -11,65 +11,208 @@
         Height="760"
         Width="1180">
     <Grid Background="{StaticResource PackWatchBackgroundBrush}">
+        <Grid.Resources>
+            <Style x:Key="SidebarButtonStyle" TargetType="Button" BasedOn="{StaticResource NavigationButtonStyle}">
+                <Style.Triggers>
+                    <!-- Trigger for Home -->
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding SelectedPage}" Value="{x:Static application:ApplicationPage.Home}" />
+                            <Condition Binding="{Binding CommandParameter, RelativeSource={RelativeSource Self}}" Value="{x:Static application:ApplicationPage.Home}" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Background" Value="{StaticResource PackWatchAccentSoftBrush}" />
+                        <Setter Property="BorderBrush" Value="{StaticResource PackWatchAccentBrush}" />
+                        <Setter Property="Foreground" Value="{StaticResource PackWatchAccentDarkBrush}" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                    </MultiDataTrigger>
+                    <!-- Trigger for History -->
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding SelectedPage}" Value="{x:Static application:ApplicationPage.History}" />
+                            <Condition Binding="{Binding CommandParameter, RelativeSource={RelativeSource Self}}" Value="{x:Static application:ApplicationPage.History}" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Background" Value="{StaticResource PackWatchAccentSoftBrush}" />
+                        <Setter Property="BorderBrush" Value="{StaticResource PackWatchAccentBrush}" />
+                        <Setter Property="Foreground" Value="{StaticResource PackWatchAccentDarkBrush}" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                    </MultiDataTrigger>
+                    <!-- Trigger for Settings -->
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding SelectedPage}" Value="{x:Static application:ApplicationPage.Settings}" />
+                            <Condition Binding="{Binding CommandParameter, RelativeSource={RelativeSource Self}}" Value="{x:Static application:ApplicationPage.Settings}" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Background" Value="{StaticResource PackWatchAccentSoftBrush}" />
+                        <Setter Property="BorderBrush" Value="{StaticResource PackWatchAccentBrush}" />
+                        <Setter Property="Foreground" Value="{StaticResource PackWatchAccentDarkBrush}" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                    </MultiDataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Brand Panel Styles -->
+            <Style x:Key="BrandExpandedStyle" TargetType="StackPanel">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsChecked, ElementName=CollapseToggleButton}" Value="True">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="BrandCollapsedStyle" TargetType="TextBlock">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsChecked, ElementName=CollapseToggleButton}" Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Workspace Text Collapse -->
+            <Style x:Key="WorkspaceTextCollapseStyle" TargetType="TextBlock">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsChecked, ElementName=CollapseToggleButton}" Value="True">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Resources>
+
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="268" />
+            <ColumnDefinition x:Name="SidebarColumn">
+                <ColumnDefinition.Style>
+                    <Style TargetType="ColumnDefinition">
+                        <Setter Property="Width" Value="268" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsChecked, ElementName=CollapseToggleButton}" Value="True">
+                                <Setter Property="Width" Value="80" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ColumnDefinition.Style>
+            </ColumnDefinition>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0"
-                Background="#F7FBFC"
-                BorderBrush="#E1EAEE"
-                BorderThickness="0,0,1,0"
-                Padding="20">
+                Background="#F1F5F9"
+                BorderBrush="#E2E8F0"
+                BorderThickness="0,0,1,0">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Padding" Value="20" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsChecked, ElementName=CollapseToggleButton}" Value="True">
+                            <Setter Property="Padding" Value="10" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
             <DockPanel LastChildFill="True">
                 <StackPanel DockPanel.Dock="Top">
-                    <Border Background="{StaticResource PackWatchAccentDarkBrush}"
-                            CornerRadius="14"
-                            Padding="16"
-                            Margin="0,0,0,24">
-                        <StackPanel>
-                            <TextBlock Text="PackWatch"
-                                       FontSize="28"
-                                       FontWeight="SemiBold"
-                                       Foreground="White"
-                                       Margin="0,0,0,4" />
-                            <TextBlock Text="Local validation console"
-                                       Foreground="#CFE7EF" />
-                        </StackPanel>
-                    </Border>
+                    <!-- Brand Header and Collapse Button Row -->
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Brand Card -->
+                        <Border Grid.Column="0"
+                                Background="{StaticResource PackWatchAccentDarkBrush}"
+                                CornerRadius="12"
+                                Padding="12"
+                                x:Name="BrandCard">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsChecked, ElementName=CollapseToggleButton}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock Text="PackWatch"
+                                           FontSize="22"
+                                           FontWeight="SemiBold"
+                                           Foreground="White"
+                                           Margin="0,0,0,2" />
+                                <TextBlock Text="Local validation console"
+                                           Foreground="#E6F0FF"
+                                           FontSize="10" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Collapse Toggle Button -->
+                        <ToggleButton x:Name="CollapseToggleButton"
+                                      Grid.Column="1"
+                                      Background="Transparent"
+                                      BorderBrush="Transparent"
+                                      Foreground="{StaticResource PackWatchMutedTextBrush}"
+                                      Content="&#xE700;"
+                                      FontFamily="Segoe MDL2 Assets"
+                                      FontSize="16"
+                                      Width="36"
+                                      Height="36"
+                                      Cursor="Hand"
+                                      VerticalAlignment="Center"
+                                      Margin="8,0,0,0">
+                            <ToggleButton.Style>
+                                <Style TargetType="ToggleButton">
+                                    <Setter Property="HorizontalAlignment" Value="Right" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}}" Value="True">
+                                            <Setter Property="HorizontalAlignment" Value="Center" />
+                                            <Setter Property="Grid.Column" Value="0" />
+                                            <Setter Property="Grid.ColumnSpan" Value="2" />
+                                            <Setter Property="Margin" Value="0,0,0,16" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ToggleButton.Style>
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="ButtonRoot" Background="{TemplateBinding Background}" CornerRadius="6">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="ButtonRoot" Property="Background" Value="#E2E8F0" />
+                                            <Setter Property="Foreground" Value="{StaticResource PackWatchTextBrush}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                    </Grid>
 
                     <TextBlock Text="WORKSPACE"
+                               Style="{StaticResource WorkspaceTextCollapseStyle}"
                                Foreground="{StaticResource PackWatchMutedTextBrush}"
                                FontSize="11"
                                FontWeight="SemiBold"
                                Margin="2,0,0,10" />
 
                     <Button Content="Home"
+                            Tag="&#xE80F;"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static application:ApplicationPage.Home}"
-                            Style="{StaticResource NavigationButtonStyle}" />
+                            Style="{StaticResource SidebarButtonStyle}" />
                     <Button Content="History"
+                            Tag="&#xE81C;"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static application:ApplicationPage.History}"
-                            Style="{StaticResource NavigationButtonStyle}" />
+                            Style="{StaticResource SidebarButtonStyle}" />
                     <Button Content="Settings"
+                            Tag="&#xE713;"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static application:ApplicationPage.Settings}"
-                            Style="{StaticResource NavigationButtonStyle}" />
+                            Style="{StaticResource SidebarButtonStyle}" />
                 </StackPanel>
-
-                <Border DockPanel.Dock="Bottom"
-                        Style="{StaticResource StatusPanelStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Status"
-                                   Style="{StaticResource FieldLabelStyle}"
-                                   Margin="0,0,0,4" />
-                        <TextBlock Text="{Binding StatusMessage}"
-                                   Foreground="{StaticResource PackWatchTextBrush}"
-                                   FontWeight="SemiBold"
-                                   TextWrapping="Wrap" />
-                    </StackPanel>
-                </Border>
             </DockPanel>
         </Border>
 
