@@ -8,86 +8,188 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0">
-            <TextBlock Text="History"
-                       Style="{StaticResource PageTitleStyle}" />
-            <TextBlock Text="Search recorded orders and open the saved packing videos."
-                       Style="{StaticResource PageSubtitleStyle}" />
-        </StackPanel>
+        <Grid Grid.Row="0"
+              Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="280" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0"
+                        Margin="0,0,20,0">
+                <TextBlock Text="History"
+                           Style="{StaticResource PageTitleStyle}" />
+                <TextBlock Text="Review the session artifacts saved from local validation runs and reopen their folders when you need to inspect evidence."
+                           Style="{StaticResource PageSubtitleStyle}" />
+            </StackPanel>
+
+            <Border Grid.Column="1"
+                    Style="{StaticResource InsetCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Result summary"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <TextBlock Text="{Binding ResultsSummary}"
+                               Style="{StaticResource SectionTitleStyle}"
+                               Margin="0,0,0,4" />
+                    <TextBlock Text="Each row represents one saved desktop session artifact from the current local profile."
+                               Style="{StaticResource FieldHelpStyle}" />
+                </StackPanel>
+            </Border>
+        </Grid>
 
         <Border Grid.Row="1"
                 Style="{StaticResource CardStyle}"
                 Margin="0,0,0,16">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200" />
-                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="14" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="18" />
-                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="14" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Date Filter" Style="{StaticResource FieldLabelStyle}" />
-                    <ComboBox SelectedValue="{Binding SelectedDateFilter}"
-                              SelectedValuePath="Content">
-                        <ComboBoxItem Content="Today" />
-                        <ComboBoxItem Content="Yesterday" />
-                        <ComboBoxItem Content="This Week" />
-                        <ComboBoxItem Content="Custom Date" />
-                    </ComboBox>
+                    <TextBlock Text="Date filter"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <ComboBox ItemsSource="{Binding DateFilterOptions}"
+                              SelectedItem="{Binding SelectedDateFilter}" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="Search Order" Style="{StaticResource FieldLabelStyle}" />
+                    <TextBlock Text="Search order"
+                               Style="{StaticResource FieldLabelStyle}" />
                     <TextBox Text="{Binding SearchOrderCode, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
 
                 <Button Grid.Column="4"
-                        Content="Open Folder"
+                        Content="Refresh"
+                        Command="{Binding RefreshCommand}"
                         Style="{StaticResource SecondaryButtonStyle}"
-                        VerticalAlignment="Bottom" />
+                        VerticalAlignment="Bottom"
+                        MinWidth="108" />
+
+                <Button Grid.Column="6"
+                        Content="Open Folder"
+                        Command="{Binding OpenFolderCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        VerticalAlignment="Bottom"
+                        MinWidth="128" />
             </Grid>
         </Border>
 
         <Border Grid.Row="2"
                 Style="{StaticResource CardStyle}">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <Grid Grid.Row="0" Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="120" />
-                        <ColumnDefinition Width="180" />
-                        <ColumnDefinition Width="110" />
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Grid.Column="0" Text="Thumbnail" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBlock Grid.Column="1" Text="Order Code" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBlock Grid.Column="2" Text="Start Time" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBlock Grid.Column="3" Text="End Time" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBlock Grid.Column="4" Text="Duration" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBlock Grid.Column="5" Text="Video Path" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBlock Grid.Column="6" Text="Action" Style="{StaticResource FieldLabelStyle}" />
-                </Grid>
-
-                <Border Grid.Row="1"
-                        Background="{StaticResource PackWatchSoftSurfaceBrush}"
-                        CornerRadius="8"
-                        Padding="24">
+                <Border Style="{StaticResource InsetCardStyle}"
+                        Visibility="{Binding EmptyStateVisibility}">
                     <TextBlock Text="{Binding EmptyStateMessage}"
                                Foreground="{StaticResource PackWatchMutedTextBrush}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               TextAlignment="Center" />
+                               TextAlignment="Center"
+                               MaxWidth="420" />
                 </Border>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Visibility="{Binding ResultsVisibility}">
+                    <ItemsControl ItemsSource="{Binding Records}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource InsetCardStyle}"
+                                        Margin="0,0,0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="78" />
+                                            <ColumnDefinition Width="1.1*" />
+                                            <ColumnDefinition Width="180" />
+                                            <ColumnDefinition Width="130" />
+                                            <ColumnDefinition Width="1.2*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0"
+                                                Background="{StaticResource PackWatchAccentDarkBrush}"
+                                                CornerRadius="10"
+                                                Width="54"
+                                                Height="54"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding BadgeText}"
+                                                       Foreground="White"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Typography.NumeralAlignment="Tabular" />
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1"
+                                                    Margin="0,0,16,0"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding OrderCode}"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource PackWatchTextBrush}" />
+                                            <TextBlock Text="{Binding CameraName}"
+                                                       Style="{StaticResource FieldHelpStyle}"
+                                                       Margin="0,4,0,0" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2"
+                                                    Margin="0,0,16,0"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="Started"
+                                                       Style="{StaticResource FieldLabelStyle}" />
+                                            <TextBlock Text="{Binding StartedAtText}"
+                                                       Style="{StaticResource CardSummaryStyle}" />
+                                            <TextBlock Text="Ended"
+                                                       Style="{StaticResource FieldLabelStyle}"
+                                                       Margin="0,10,0,0" />
+                                            <TextBlock Text="{Binding EndedAtText}"
+                                                       Style="{StaticResource CardSummaryStyle}" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="3"
+                                                    Margin="0,0,16,0"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="Duration"
+                                                       Style="{StaticResource FieldLabelStyle}" />
+                                            <TextBlock Text="{Binding DurationText}"
+                                                       FontSize="20"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource PackWatchTextBrush}"
+                                                       Typography.NumeralAlignment="Tabular" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="4"
+                                                    Margin="0,0,16,0"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="Artifact"
+                                                       Style="{StaticResource FieldLabelStyle}" />
+                                            <TextBlock Text="{Binding ArtifactName}"
+                                                       Style="{StaticResource CardSummaryStyle}"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding ArtifactPath}"
+                                                       Style="{StaticResource FieldHelpStyle}"
+                                                       Margin="0,4,0,0" />
+                                        </StackPanel>
+
+                                        <Button Grid.Column="5"
+                                                Content="Reveal"
+                                                Command="{Binding DataContext.RevealArtifactCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                VerticalAlignment="Center"
+                                                MinWidth="102" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </Grid>
         </Border>
     </Grid>

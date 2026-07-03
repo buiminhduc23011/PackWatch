@@ -4,105 +4,373 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0">
-            <TextBlock Text="Live Camera"
+        <StackPanel Grid.Row="0"
+                    Margin="0,0,0,14">
+            <TextBlock Text="Live Validation"
                        Style="{StaticResource PageTitleStyle}" />
-            <TextBlock Text="Preview, detection status, and current packing session."
+            <TextBlock Text="Run a local packing session, confirm the barcode manually, and save a reusable desktop artifact for review."
                        Style="{StaticResource PageSubtitleStyle}" />
         </StackPanel>
 
         <Border Grid.Row="1"
-                Style="{StaticResource CardStyle}">
+                Style="{StaticResource InsetCardStyle}"
+                Margin="0,0,0,18"
+                Padding="16">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*" />
-                    <ColumnDefinition Width="24" />
-                    <ColumnDefinition Width="360" />
+                    <ColumnDefinition Width="1.2*" />
+                    <ColumnDefinition Width="14" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0"
-                        Background="#101820"
-                        CornerRadius="8"
-                        MinHeight="460">
-                    <Grid>
-                        <Border HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Background="#243642"
-                                CornerRadius="6"
-                                Padding="10,6"
-                                Margin="14">
-                            <TextBlock Text="{Binding Fps, StringFormat=FPS {0}}"
-                                       Foreground="#DDE7EC"
-                                       Typography.NumeralAlignment="Tabular" />
-                        </Border>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Next order code"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <TextBox Text="{Binding OrderCodeInput, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
 
-                        <TextBlock Text="{Binding PreviewMessage}"
-                                   Foreground="#DDE7EC"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   TextAlignment="Center"
-                                   Margin="42"
-                                   MaxWidth="420" />
-                    </Grid>
-                </Border>
+                <Button Grid.Column="2"
+                        Content="Use Suggested"
+                        Command="{Binding UseSuggestedOrderCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        VerticalAlignment="Bottom"
+                        MinWidth="138" />
 
-                <Border Grid.Column="2"
-                        Background="{StaticResource PackWatchSoftSurfaceBrush}"
-                        CornerRadius="8"
-                        Padding="18">
-                    <StackPanel>
-                        <TextBlock Text="Session"
-                                   Style="{StaticResource SectionTitleStyle}" />
-
-                        <TextBlock Text="Camera Status" Style="{StaticResource FieldLabelStyle}" />
-                        <TextBlock Text="{Binding CameraStatus}" Style="{StaticResource MetricValueStyle}" />
-
-                        <TextBlock Text="Recording Status" Style="{StaticResource FieldLabelStyle}" />
-                        <TextBlock Text="{Binding RecordingStatus}" Style="{StaticResource MetricValueStyle}" />
-
-                        <TextBlock Text="Current Order" Style="{StaticResource FieldLabelStyle}" />
-                        <TextBlock Text="{Binding CurrentOrder}" Style="{StaticResource MetricValueStyle}" />
-
-                        <TextBlock Text="Recording Time" Style="{StaticResource FieldLabelStyle}" />
-                        <TextBlock Text="{Binding RecordingTime}" Style="{StaticResource MetricValueStyle}" />
-
-                        <Grid Margin="0,2,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Last Barcode" Style="{StaticResource FieldLabelStyle}" />
-                                <TextBlock Text="{Binding LastBarcode}" FontWeight="SemiBold" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                                <TextBlock Text="Resolution" Style="{StaticResource FieldLabelStyle}" />
-                                <TextBlock Text="{Binding Resolution}" FontWeight="SemiBold" />
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
+                <Button Grid.Column="4"
+                        Content="Launch Camera"
+                        Command="{Binding LaunchCameraAppCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        VerticalAlignment="Bottom"
+                        MinWidth="138" />
             </Grid>
         </Border>
 
-        <StackPanel Grid.Row="2"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Margin="0,18,0,0">
-            <Button Content="Start"
-                    Command="{Binding StartCommand}"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    Margin="0,0,12,0" />
-            <Button Content="Stop"
-                    Command="{Binding StopCommand}"
-                    Style="{StaticResource SecondaryButtonStyle}" />
-        </StackPanel>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2.1*" />
+                <ColumnDefinition Width="24" />
+                <ColumnDefinition Width="360" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Style="{StaticResource CardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0"
+                          Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Capture surface"
+                                       Style="{StaticResource FieldLabelStyle}" />
+                            <TextBlock Text="{Binding CameraSourceSummary}"
+                                       Style="{StaticResource CardSummaryStyle}" />
+                        </StackPanel>
+
+                        <Border Grid.Column="1"
+                                Style="{StaticResource CardBadgeStyle}">
+                            <TextBlock Text="{Binding Resolution}"
+                                       Style="{StaticResource CardBadgeTextStyle}" />
+                        </Border>
+
+                        <Border Grid.Column="3"
+                                Style="{StaticResource CardBadgeStyle}">
+                            <TextBlock Text="{Binding Fps, StringFormat={}{0} FPS}"
+                                       Style="{StaticResource CardBadgeTextStyle}" />
+                        </Border>
+                    </Grid>
+
+                    <Border Grid.Row="1"
+                            Background="#0F1A22"
+                            CornerRadius="12"
+                            Padding="16"
+                            MinHeight="520">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Background="#183040"
+                                        CornerRadius="999"
+                                        Padding="10,4"
+                                        HorizontalAlignment="Left">
+                                    <TextBlock Text="{Binding RecordingStatus}"
+                                               Foreground="#C9E3EE"
+                                               FontSize="11"
+                                               FontWeight="SemiBold" />
+                                </Border>
+
+                                <Border Grid.Column="1"
+                                        Background="#1B2B36"
+                                        CornerRadius="8"
+                                        Padding="10,6"
+                                        HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding RecordingTime}"
+                                               Foreground="#E4EEF3"
+                                               FontWeight="SemiBold"
+                                               Typography.NumeralAlignment="Tabular" />
+                                </Border>
+                            </Grid>
+
+                            <Grid Grid.Row="1"
+                                  Margin="0,18">
+                                <Border Background="#111D25"
+                                        BorderBrush="#223746"
+                                        BorderThickness="1"
+                                        CornerRadius="12" />
+
+                                <Image Source="{Binding PreviewImage}"
+                                       Stretch="UniformToFill"
+                                       Visibility="{Binding PreviewImageVisibility}"
+                                       ClipToBounds="True" />
+
+                                <Grid Visibility="{Binding PreviewPlaceholderVisibility}">
+                                    <Border BorderBrush="#29414E"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Margin="46"
+                                            Opacity="0.85" />
+                                    <Border BorderBrush="#2A5161"
+                                            BorderThickness="1.5"
+                                            CornerRadius="10"
+                                            Width="420"
+                                            Height="180"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Opacity="0.90" />
+
+                                    <StackPanel HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                MaxWidth="600">
+                                        <TextBlock Text="LIVE CAMERA SURFACE"
+                                                   Foreground="#6E9CB0"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,14" />
+                                        <TextBlock Text="{Binding PreviewMessage}"
+                                                   Foreground="#EEF6FA"
+                                                   FontSize="20"
+                                                   FontWeight="SemiBold"
+                                                   TextWrapping="Wrap"
+                                                   TextAlignment="Center"
+                                                   Margin="0,0,0,14" />
+                                        <TextBlock Text="{Binding CameraStatus}"
+                                                   Foreground="#A9C1CD"
+                                                   FontSize="13"
+                                                   TextWrapping="Wrap"
+                                                   TextAlignment="Center" />
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+
+                            <Border Grid.Row="2"
+                                    Style="{StaticResource InsetCardStyle}"
+                                    Background="#152631"
+                                    BorderBrush="#243947"
+                                    Visibility="{Binding SessionArtifactVisibility}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0"
+                                                Margin="0,0,12,0">
+                                        <TextBlock Text="Latest artifact"
+                                                   Foreground="#7FA7BA"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,4" />
+                                        <TextBlock Text="{Binding SessionArtifactLabel}"
+                                                   Foreground="#F1F8FB"
+                                                   FontWeight="SemiBold"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1"
+                                            Content="Reveal"
+                                            Command="{Binding RevealArtifactCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            MinWidth="102" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="2"
+                            Style="{StaticResource InsetCardStyle}"
+                            Margin="0,16,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0"
+                                        Margin="0,0,16,0">
+                                <TextBlock Text="Save folder"
+                                           Style="{StaticResource FieldLabelStyle}" />
+                                <TextBlock Text="{Binding SaveFolderSummary}"
+                                           Style="{StaticResource CardSummaryStyle}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <Button Grid.Column="1"
+                                    Content="Open Folder"
+                                    Command="{Binding OpenSaveFolderCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    MinWidth="126" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2"
+                    Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Session"
+                                   Style="{StaticResource SectionTitleStyle}"
+                                   Margin="0" />
+
+                        <Border Grid.Column="1"
+                                Style="{StaticResource CardBadgeStyle}">
+                            <TextBlock Text="{Binding CurrentOrder}"
+                                       Style="{StaticResource CardBadgeTextStyle}" />
+                        </Border>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="12" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0"
+                                Grid.Column="0"
+                                Style="{StaticResource InsetCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Camera"
+                                           Style="{StaticResource FieldLabelStyle}" />
+                                <TextBlock Text="{Binding CameraStatus}"
+                                           Style="{StaticResource CardSummaryStyle}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="0"
+                                Grid.Column="2"
+                                Style="{StaticResource InsetCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Recording"
+                                           Style="{StaticResource FieldLabelStyle}" />
+                                <TextBlock Text="{Binding RecordingStatus}"
+                                           Style="{StaticResource CardSummaryStyle}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2"
+                                Grid.Column="0"
+                                Style="{StaticResource InsetCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Current order"
+                                           Style="{StaticResource FieldLabelStyle}" />
+                                <TextBlock Text="{Binding CurrentOrder}"
+                                           Style="{StaticResource CardSummaryStyle}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2"
+                                Grid.Column="2"
+                                Style="{StaticResource InsetCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Last barcode"
+                                           Style="{StaticResource FieldLabelStyle}" />
+                                <TextBlock Text="{Binding LastBarcode}"
+                                           Style="{StaticResource CardSummaryStyle}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Border Style="{StaticResource InsetCardStyle}"
+                            Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Barcode confirmation"
+                                       Style="{StaticResource FieldLabelStyle}" />
+                            <TextBox Text="{Binding DetectedBarcodeInput, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,10" />
+                            <Button Content="Confirm Barcode"
+                                    Command="{Binding ConfirmBarcodeCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    HorizontalAlignment="Left"
+                                    MinWidth="148" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource InsetCardStyle}"
+                            Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Current artifact"
+                                       Style="{StaticResource FieldLabelStyle}" />
+                            <TextBlock Text="{Binding SessionArtifactLabel}"
+                                       Style="{StaticResource CardSummaryStyle}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Content="{Binding StartButtonText}"
+                                Command="{Binding StartCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}" />
+                        <Button Grid.Column="2"
+                                Content="Stop Session"
+                                Command="{Binding StopCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

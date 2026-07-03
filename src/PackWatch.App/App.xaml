@@ -4,6 +4,8 @@
              xmlns:views="clr-namespace:PackWatch.App.Views"
              xmlns:viewModels="clr-namespace:PackWatch.App.ViewModels">
     <Application.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
         <Color x:Key="PackWatchBackgroundColor">#F3F6F8</Color>
         <Color x:Key="PackWatchSurfaceColor">#FFFFFF</Color>
         <Color x:Key="PackWatchSoftSurfaceColor">#EEF5F7</Color>
@@ -31,11 +33,11 @@
         <SolidColorBrush x:Key="PackWatchBorderBrush" Color="{StaticResource PackWatchBorderColor}" />
 
         <DropShadowEffect x:Key="CardShadow"
-                          BlurRadius="20"
-                          ShadowDepth="4"
+                          BlurRadius="24"
+                          ShadowDepth="6"
                           Direction="270"
                           Color="#20323D"
-                          Opacity="0.10" />
+                          Opacity="0.08" />
 
         <Style TargetType="Window">
             <Setter Property="FontFamily" Value="Segoe UI" />
@@ -46,11 +48,27 @@
 
         <Style x:Key="CardStyle" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource PackWatchSurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="#E5ECEF" />
+            <Setter Property="BorderBrush" Value="#E1E9ED" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="Effect" Value="{StaticResource CardShadow}" />
+        </Style>
+
+        <Style x:Key="InsetCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PackWatchSoftSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="#DBE7EB" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Padding" Value="18" />
-            <Setter Property="Effect" Value="{StaticResource CardShadow}" />
+            <Setter Property="Padding" Value="14" />
+        </Style>
+
+        <Style x:Key="StatusPanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PackWatchSoftSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="#D8E5E9" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="16" />
         </Style>
 
         <Style x:Key="PageTitleStyle" TargetType="TextBlock">
@@ -85,6 +103,27 @@
             <Setter Property="FontSize" Value="12" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="Margin" Value="0,6,0,0" />
+        </Style>
+
+        <Style x:Key="CardSummaryStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource PackWatchTextBrush}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
+        </Style>
+
+        <Style x:Key="CardBadgeStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PackWatchAccentSoftBrush}" />
+            <Setter Property="CornerRadius" Value="999" />
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+
+        <Style x:Key="CardBadgeTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource PackWatchAccentDarkBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
 
         <Style x:Key="MetricValueStyle" TargetType="TextBlock">

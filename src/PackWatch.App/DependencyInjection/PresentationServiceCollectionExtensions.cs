@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PackWatch.App.Navigation;
+using PackWatch.App.Services;
 using PackWatch.App.ViewModels;
 using PackWatch.App.Views;
 using PackWatch.Application.Navigation;
@@ -23,6 +24,8 @@ public static class PresentationServiceCollectionExtensions
 
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<PageViewModelFactory>();
+        services.AddSingleton<IAppStatusService, AppStatusService>();
+        services.AddSingleton<IDesktopShellService, DesktopShellService>();
 
         return services;
     }
