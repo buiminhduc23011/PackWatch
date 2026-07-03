@@ -78,7 +78,6 @@ internal sealed class LocalRecordingService : IRecordingService
         }
 
         var completedSession = session with { EndedAt = endedAt };
-        await WriteArtifactAsync(completedSession, context.Options, cancellationToken);
         await WriteThumbnailNoteAsync(context.ThumbnailPath, completedSession, context.Options, cancellationToken);
 
         var record = OrderRecord.Start(
@@ -92,37 +91,6 @@ internal sealed class LocalRecordingService : IRecordingService
         await _historyWriter.AppendAsync(record, cancellationToken);
 
         return completedSession;
-    }
-
-    private static async Task WriteArtifactAsync(
-        RecordingSession session,
-        RecordingOptions options,
-        CancellationToken cancellationToken)
-    {
-        var directoryPath = Path.GetDirectoryName(session.VideoPath);
-
-        if (string.IsNullOrWhiteSpace(directoryPath))
-        {
-            throw new InvalidOperationException("A valid session artifact path is required.");
-        }
-
-        Directory.CreateDirectory(directoryPath);
-
-        await using var stream = File.Create(session.VideoPath);
-        await JsonSerializer.SerializeAsync(
-            stream,
-            new SessionArtifact(
-                session.Id,
-                session.OrderCode,
-                options.CameraName,
-                options.Resolution,
-                options.FramesPerSecond,
-                options.BitrateKbps,
-                options.VideoFormat,
-                session.StartedAt,
-                session.EndedAt),
-            SerializerOptions,
-            cancellationToken);
     }
 
     private static Task WriteThumbnailNoteAsync(

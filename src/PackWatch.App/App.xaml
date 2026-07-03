@@ -7,9 +7,9 @@
     <Application.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
-        <Color x:Key="PackWatchBackgroundColor">#F8FAFC</Color>
+        <Color x:Key="PackWatchBackgroundColor">#F1F5F9</Color>
         <Color x:Key="PackWatchSurfaceColor">#FFFFFF</Color>
-        <Color x:Key="PackWatchSoftSurfaceColor">#F1F5F9</Color>
+        <Color x:Key="PackWatchSoftSurfaceColor">#F8FAFC</Color>
         <Color x:Key="PackWatchAccentColor">#007BFF</Color>
         <Color x:Key="PackWatchAccentDarkColor">#0056B3</Color>
         <Color x:Key="PackWatchAccentSoftColor">#E6F0FF</Color>
@@ -50,7 +50,7 @@
 
         <Style x:Key="CardStyle" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource PackWatchSurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="#E1E9ED" />
+            <Setter Property="BorderBrush" Value="{StaticResource PackWatchBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="14" />
             <Setter Property="Padding" Value="20" />
@@ -59,7 +59,7 @@
 
         <Style x:Key="InsetCardStyle" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource PackWatchSoftSurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="#DBE7EB" />
+            <Setter Property="BorderBrush" Value="{StaticResource PackWatchBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="14" />
@@ -174,7 +174,7 @@
         <!-- ComboBox ToggleButton Template -->
         <ControlTemplate x:Key="ComboBoxToggleButtonTemplate" TargetType="ToggleButton">
             <Border x:Name="TemplateRoot"
-                    Background="{TemplateBinding Background}"
+                    Background="White"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="8">
@@ -440,6 +440,56 @@
             x:Key="SecondaryButtonStyle"
             BasedOn="{StaticResource BaseButtonStyle}"
             TargetType="Button" />
+
+        <Style x:Key="DangerButtonStyle" TargetType="Button">
+            <Setter Property="MinHeight" Value="40" />
+            <Setter Property="MinWidth" Value="100" />
+            <Setter Property="Padding" Value="16,8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Background" Value="{StaticResource PackWatchDangerBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PackWatchDangerBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonRoot"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"
+                            RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1" />
+                            </Border.RenderTransform>
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonRoot" Property="Background" Value="#DC2626" />
+                                <Setter TargetName="ButtonRoot" Property="BorderBrush" Value="#DC2626" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonRoot" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.97" ScaleY="0.97" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <Style x:Key="NavigationButtonStyle" TargetType="Button">
             <Setter Property="MinHeight" Value="40" />

@@ -42,6 +42,38 @@ internal sealed class JsonHistoryService : IHistoryService, IOrderHistoryWriter
         await SaveSnapshotsAsync(snapshots, cancellationToken);
     }
 
+    public async Task DeleteAsync(string videoPath, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(videoPath))
+        {
+            return;
+        }
+
+        var snapshots = await LoadSnapshotsAsync(cancellationToken);
+        var toRemove = snapshots.FirstOrDefault(s => s.VideoPath.Equals(videoPath, StringComparison.OrdinalIgnoreCase));
+        if (toRemove is not null)
+        {
+            snapshots.Remove(toRemove);
+            await SaveSnapshotsAsync(snapshots, cancellationToken);
+
+            try
+            {
+                if (File.Exists(videoPath))
+                {
+                    File.Delete(videoPath);
+                }
+                if (File.Exists(toRemove.ThumbnailPath))
+                {
+                    File.Delete(toRemove.ThumbnailPath);
+                }
+            }
+            catch
+            {
+                // Ignored
+            }
+        }
+    }
+
     private static async Task<List<PersistedOrderRecord>> LoadSnapshotsAsync(CancellationToken cancellationToken)
     {
         var historyFilePath = LocalPackWatchPaths.HistoryFilePath;

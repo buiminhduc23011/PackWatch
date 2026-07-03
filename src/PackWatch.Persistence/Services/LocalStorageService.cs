@@ -22,7 +22,7 @@ internal sealed class LocalStorageService : IStorageService
         var sessionFolder = BuildSessionFolder(settings.SaveFolder, businessDate);
         var safeOrderCode = Sanitize(orderCode);
         var safeExtension = string.IsNullOrWhiteSpace(extension) ? "capture" : extension.Trim().TrimStart('.');
-        var fileName = $"{DateTimeOffset.Now:yyyyMMdd-HHmmss}_{safeOrderCode}.{safeExtension}.session.json";
+        var fileName = $"{DateTimeOffset.Now:yyyyMMdd-HHmmss}_{safeOrderCode}.{safeExtension}";
         return Path.Combine(sessionFolder, fileName);
     }
 

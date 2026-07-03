@@ -4,54 +4,21 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0"
-                    Margin="0,0,0,14">
-            <TextBlock Text="Live Validation"
-                       Style="{StaticResource PageTitleStyle}" />
-            <TextBlock Text="Run a local packing session, confirm the barcode manually, and save a reusable desktop artifact for review."
-                       Style="{StaticResource PageSubtitleStyle}" />
-        </StackPanel>
-
-        <Border Grid.Row="1"
+        <Border Grid.Row="0"
                 Style="{StaticResource InsetCardStyle}"
                 Margin="0,0,0,18"
                 Padding="16">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="14" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="10" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Next order code"
-                               Style="{StaticResource FieldLabelStyle}" />
-                    <TextBox Text="{Binding OrderCodeInput, UpdateSourceTrigger=PropertyChanged}" />
-                </StackPanel>
-
-                <Button Grid.Column="2"
-                        Content="Use Suggested"
-                        Command="{Binding UseSuggestedOrderCommand}"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        VerticalAlignment="Bottom"
-                        MinWidth="138" />
-
-                <Button Grid.Column="4"
-                        Content="Launch Camera"
-                        Command="{Binding LaunchCameraAppCommand}"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        VerticalAlignment="Bottom"
-                        MinWidth="138" />
-            </Grid>
+            <StackPanel>
+                <TextBlock Text="Next order code"
+                           Style="{StaticResource FieldLabelStyle}" />
+                <TextBox Text="{Binding OrderCodeInput, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
         </Border>
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2.1*" />
                 <ColumnDefinition Width="24" />
@@ -114,13 +81,12 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <Border Background="#183040"
-                                        CornerRadius="999"
-                                        Padding="10,4"
+                                <Border Background="#1B2B36"
+                                        CornerRadius="8"
+                                        Padding="10,6"
                                         HorizontalAlignment="Left">
                                     <TextBlock Text="{Binding RecordingStatus}"
-                                               Foreground="#C9E3EE"
-                                               FontSize="11"
+                                               Foreground="#E4EEF3"
                                                FontWeight="SemiBold" />
                                 </Border>
 

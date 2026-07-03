@@ -20,17 +20,6 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
 
     public ObservableCollection<HistoryRecordItem> Records { get; } = [];
 
-    public IReadOnlyList<string> DateFilterOptions { get; } =
-    [
-        "Today",
-        "Last 3 days",
-        "Last 7 days",
-        "All time"
-    ];
-
-    [ObservableProperty]
-    private string selectedDateFilter = "Last 7 days";
-
     [ObservableProperty]
     private string searchOrderCode = string.Empty;
 
@@ -43,6 +32,27 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
 
     [ObservableProperty]
     private string emptyStateMessage = "No session artifacts yet. Start a validation run on Home to create the first record.";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPreviousPage))]
+    [NotifyPropertyChangedFor(nameof(HasNextPage))]
+    [NotifyPropertyChangedFor(nameof(PageSummary))]
+    private int currentPage = 1;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPreviousPage))]
+    [NotifyPropertyChangedFor(nameof(HasNextPage))]
+    [NotifyPropertyChangedFor(nameof(PageSummary))]
+    private int totalPages = 1;
+
+    [ObservableProperty]
+    private string jumpPageInput = "1";
+
+    private const int PageSize = 10;
+
+    public bool HasPreviousPage => CurrentPage > 1;
+    public bool HasNextPage => CurrentPage < TotalPages;
+    public string PageSummary => $"Page {CurrentPage} of {TotalPages}";
 
     public HistoryPageViewModel(
         IHistoryService historyService,
@@ -71,20 +81,45 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
         _ = RefreshAsync(announceStatus: false);
     }
 
-    partial void OnSelectedDateFilterChanged(string value)
+    [RelayCommand]
+    private async Task SearchAsync(CancellationToken cancellationToken)
     {
-        _ = RefreshAsync(announceStatus: false);
-    }
-
-    partial void OnSearchOrderCodeChanged(string value)
-    {
-        _ = RefreshAsync(announceStatus: false);
+        CurrentPage = 1;
+        await RefreshAsync(announceStatus: false, cancellationToken);
     }
 
     [RelayCommand]
-    private async Task RefreshAsync(CancellationToken cancellationToken)
+    private async Task PreviousPageAsync(CancellationToken cancellationToken)
     {
-        await RefreshAsync(announceStatus: true, cancellationToken);
+        if (HasPreviousPage)
+        {
+            CurrentPage--;
+            await RefreshAsync(announceStatus: false, cancellationToken);
+        }
+    }
+
+    [RelayCommand]
+    private async Task NextPageAsync(CancellationToken cancellationToken)
+    {
+        if (HasNextPage)
+        {
+            CurrentPage++;
+            await RefreshAsync(announceStatus: false, cancellationToken);
+        }
+    }
+
+    [RelayCommand]
+    private async Task JumpToPageAsync(CancellationToken cancellationToken)
+    {
+        if (int.TryParse(JumpPageInput, out int page) && page >= 1 && page <= TotalPages)
+        {
+            CurrentPage = page;
+            await RefreshAsync(announceStatus: false, cancellationToken);
+        }
+        else
+        {
+            JumpPageInput = CurrentPage.ToString();
+        }
     }
 
     [RelayCommand]
@@ -102,7 +137,7 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
     }
 
     [RelayCommand]
-    private void RevealArtifact(HistoryRecordItem? item)
+    private void OpenArtifact(HistoryRecordItem? item)
     {
         if (item is null)
         {
@@ -110,13 +145,53 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
             return;
         }
 
-        if (_desktopShellService.RevealPath(item.ArtifactPath))
+        if (_desktopShellService.OpenFile(item.ArtifactPath))
         {
-            _appStatusService.SetStatus($"Opened the folder for {item.ArtifactName}.");
+            _appStatusService.SetStatus($"Opened artifact file {item.ArtifactName}.");
             return;
         }
 
         _appStatusService.SetStatus("Could not open the selected artifact.");
+    }
+
+    [RelayCommand]
+    private void RevealArtifact(HistoryRecordItem? item)
+    {
+        if (item is null)
+        {
+            _appStatusService.SetStatus("Choose a history row before revealing its artifact.");
+            return;
+        }
+
+        if (_desktopShellService.RevealPath(item.ArtifactPath))
+        {
+            _appStatusService.SetStatus($"Revealed artifact file {item.ArtifactName} in explorer.");
+            return;
+        }
+
+        _appStatusService.SetStatus("Could not reveal the selected artifact.");
+    }
+
+    [RelayCommand]
+    private async Task DeleteRecordAsync(HistoryRecordItem? item, CancellationToken cancellationToken)
+    {
+        if (item is null)
+        {
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"Are you sure you want to delete the validation history for order {item.OrderCode}?",
+            "Confirm Delete",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            await _historyService.DeleteAsync(item.ArtifactPath, cancellationToken);
+            _appStatusService.SetStatus($"Deleted validation record for order {item.OrderCode}.");
+            await RefreshAsync(announceStatus: false, cancellationToken);
+        }
     }
 
     private async Task RefreshAsync(bool announceStatus, CancellationToken cancellationToken = default)
@@ -126,22 +201,33 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
             var query = BuildQuery();
             var records = await _historyService.SearchAsync(query, cancellationToken);
 
+            ResultCount = records.Count;
+            TotalPages = (int)Math.Ceiling((double)ResultCount / PageSize);
+            if (TotalPages == 0) TotalPages = 1;
+            if (CurrentPage > TotalPages) CurrentPage = TotalPages;
+            if (CurrentPage < 1) CurrentPage = 1;
+            JumpPageInput = CurrentPage.ToString();
+
+            var pagedRecords = records
+                .Skip((CurrentPage - 1) * PageSize)
+                .Take(PageSize)
+                .Select(MapToViewModel);
+
             Records.Clear();
 
-            foreach (var record in records.Select(MapToViewModel))
+            foreach (var record in pagedRecords)
             {
                 Records.Add(record);
             }
 
-            ResultCount = Records.Count;
             EmptyStateMessage = HasRecords
                 ? string.Empty
-                : "No matching validation sessions were found. Try a wider date filter or start a new run from Home.";
+                : "No matching validation sessions were found.";
 
             if (announceStatus)
             {
                 _appStatusService.SetStatus(ResultCount == 0
-                    ? "History is empty for the current filter."
+                    ? "History is empty."
                     : $"Loaded {ResultCount} session artifacts from the local history.");
             }
         }
@@ -156,15 +242,7 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
 
     private OrderHistoryQuery BuildQuery()
     {
-        var today = DateOnly.FromDateTime(DateTime.Today);
-
-        return SelectedDateFilter switch
-        {
-            "Today" => new OrderHistoryQuery(SearchOrderCode, today, today),
-            "Last 3 days" => new OrderHistoryQuery(SearchOrderCode, today.AddDays(-2), today),
-            "Last 7 days" => new OrderHistoryQuery(SearchOrderCode, today.AddDays(-6), today),
-            _ => new OrderHistoryQuery(SearchOrderCode, null, null)
-        };
+        return new OrderHistoryQuery(SearchOrderCode, null, null);
     }
 
     private static HistoryRecordItem MapToViewModel(OrderRecord record)

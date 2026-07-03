@@ -166,6 +166,11 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
 
         _currentSession = await _recordingService.StartAsync(orderCode, recordingOptions, cancellationToken);
 
+        if (settings.Camera.SourceKind == CameraSourceKind.Webcam)
+        {
+            await _cameraService.StartRecordingAsync(_currentSession.VideoPath, cancellationToken);
+        }
+
         IsRecording = true;
         CurrentOrder = orderCode;
         LastBarcode = "-";
@@ -190,6 +195,11 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
         if (_currentSession is null)
         {
             return;
+        }
+
+        if (_currentSettings?.Camera.SourceKind == CameraSourceKind.Webcam)
+        {
+            await _cameraService.StopRecordingAsync(cancellationToken);
         }
 
         var completedSession = await _recordingService.StopAsync(_currentSession, cancellationToken);
@@ -373,7 +383,13 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
             return;
         }
 
-        _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        var app = System.Windows.Application.Current;
+        if (app is null)
+        {
+            return;
+        }
+
+        _ = app.Dispatcher.InvokeAsync(() =>
         {
             PreviewImage = bitmapSource;
             CameraStatus = _currentSettings is null

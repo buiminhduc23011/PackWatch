@@ -45,6 +45,16 @@ public sealed class DesktopShellService : IDesktopShellService
         return OpenFolder(path);
     }
 
+    public bool OpenFile(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            return false;
+        }
+
+        return StartShellTarget(path);
+    }
+
     private static bool StartShellTarget(string target)
     {
         try

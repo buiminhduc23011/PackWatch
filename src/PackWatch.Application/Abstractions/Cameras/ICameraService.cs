@@ -15,4 +15,8 @@ public interface ICameraService
     Task ReconnectAsync(CancellationToken cancellationToken);
 
     Task<VideoFrame?> SnapshotAsync(CancellationToken cancellationToken);
+
+    Task StartRecordingAsync(string filePath, CancellationToken cancellationToken);
+
+    Task StopRecordingAsync(CancellationToken cancellationToken);
 }

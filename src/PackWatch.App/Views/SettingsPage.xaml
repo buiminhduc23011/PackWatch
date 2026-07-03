@@ -8,13 +8,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0"
-                    Margin="0,0,0,10">
-            <TextBlock Text="Settings"
-                       Style="{StaticResource PageTitleStyle}" />
-            <TextBlock Text="Choose one shared camera source for both live preview and recording, then tune the capture profile around that source."
-                       Style="{StaticResource PageSubtitleStyle}" />
-        </StackPanel>
+
 
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"

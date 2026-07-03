@@ -7,4 +7,6 @@ public interface IHistoryService
     Task<IReadOnlyList<OrderRecord>> SearchAsync(
         OrderHistoryQuery query,
         CancellationToken cancellationToken);
+
+    Task DeleteAsync(string videoPath, CancellationToken cancellationToken);
 }

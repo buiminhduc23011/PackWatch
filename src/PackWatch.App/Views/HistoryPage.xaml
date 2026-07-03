@@ -1,77 +1,31 @@
 <UserControl x:Class="PackWatch.App.Views.HistoryPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0"
-              Margin="0,0,0,14">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="280" />
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0"
-                        Margin="0,0,20,0">
-                <TextBlock Text="History"
-                           Style="{StaticResource PageTitleStyle}" />
-                <TextBlock Text="Review the session artifacts saved from local validation runs and reopen their folders when you need to inspect evidence."
-                           Style="{StaticResource PageSubtitleStyle}" />
-            </StackPanel>
-
-            <Border Grid.Column="1"
-                    Style="{StaticResource InsetCardStyle}">
-                <StackPanel>
-                    <TextBlock Text="Result summary"
-                               Style="{StaticResource FieldLabelStyle}" />
-                    <TextBlock Text="{Binding ResultsSummary}"
-                               Style="{StaticResource SectionTitleStyle}"
-                               Margin="0,0,0,4" />
-                    <TextBlock Text="Each row represents one saved desktop session artifact from the current local profile."
-                               Style="{StaticResource FieldHelpStyle}" />
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Border Grid.Row="1"
-                Style="{StaticResource CardStyle}"
-                Margin="0,0,0,16">
+        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="220" />
-                    <ColumnDefinition Width="14" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="14" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="10" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Date filter"
-                               Style="{StaticResource FieldLabelStyle}" />
-                    <ComboBox ItemsSource="{Binding DateFilterOptions}"
-                              SelectedItem="{Binding SelectedDateFilter}" />
+                    <TextBlock Text="Search order" Style="{StaticResource FieldLabelStyle}" />
+                    <TextBox x:Name="SearchTextBox" Text="{Binding SearchOrderCode, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
                 </StackPanel>
 
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="Search order"
-                               Style="{StaticResource FieldLabelStyle}" />
-                    <TextBox Text="{Binding SearchOrderCode, UpdateSourceTrigger=PropertyChanged}" />
-                </StackPanel>
-
-                <Button Grid.Column="4"
-                        Content="Refresh"
-                        Command="{Binding RefreshCommand}"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        VerticalAlignment="Bottom"
-                        MinWidth="108" />
-
-                <Button Grid.Column="6"
+                <Button Grid.Column="2"
                         Content="Open Folder"
                         Command="{Binding OpenFolderCommand}"
                         Style="{StaticResource SecondaryButtonStyle}"
@@ -80,11 +34,9 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="2"
-                Style="{StaticResource CardStyle}">
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}">
             <Grid>
-                <Border Style="{StaticResource InsetCardStyle}"
-                        Visibility="{Binding EmptyStateVisibility}">
+                <Border Style="{StaticResource InsetCardStyle}" Visibility="{Binding EmptyStateVisibility}">
                     <TextBlock Text="{Binding EmptyStateMessage}"
                                Foreground="{StaticResource PackWatchMutedTextBrush}"
                                HorizontalAlignment="Center"
@@ -93,103 +45,157 @@
                                MaxWidth="420" />
                 </Border>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              Visibility="{Binding ResultsVisibility}">
-                    <ItemsControl ItemsSource="{Binding Records}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Style="{StaticResource InsetCardStyle}"
-                                        Margin="0,0,0,12">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="78" />
-                                            <ColumnDefinition Width="1.1*" />
-                                            <ColumnDefinition Width="180" />
-                                            <ColumnDefinition Width="130" />
-                                            <ColumnDefinition Width="1.2*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
+                <Grid Visibility="{Binding ResultsVisibility}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                                        <Border Grid.Column="0"
-                                                Background="{StaticResource PackWatchAccentDarkBrush}"
-                                                CornerRadius="10"
-                                                Width="54"
-                                                Height="54"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding BadgeText}"
-                                                       Foreground="White"
-                                                       FontSize="16"
-                                                       FontWeight="SemiBold"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"
-                                                       Typography.NumeralAlignment="Tabular" />
-                                        </Border>
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Margin="0,0,0,16">
+                        <ItemsControl ItemsSource="{Binding Records}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource InsetCardStyle}" Margin="0,0,0,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="78" />
+                                                <ColumnDefinition Width="1.1*" />
+                                                <ColumnDefinition Width="180" />
+                                                <ColumnDefinition Width="130" />
+                                                <ColumnDefinition Width="1.2*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
 
-                                        <StackPanel Grid.Column="1"
-                                                    Margin="0,0,16,0"
-                                                    VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding OrderCode}"
-                                                       FontSize="16"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{StaticResource PackWatchTextBrush}" />
-                                            <TextBlock Text="{Binding CameraName}"
-                                                       Style="{StaticResource FieldHelpStyle}"
-                                                       Margin="0,4,0,0" />
-                                        </StackPanel>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource PackWatchAccentBrush}"
+                                                    CornerRadius="10"
+                                                    Width="54"
+                                                    Height="54"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding BadgeText}"
+                                                           Foreground="White"
+                                                           FontSize="16"
+                                                           FontWeight="SemiBold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Typography.NumeralAlignment="Tabular" />
+                                            </Border>
 
-                                        <StackPanel Grid.Column="2"
-                                                    Margin="0,0,16,0"
-                                                    VerticalAlignment="Center">
-                                            <TextBlock Text="Started"
-                                                       Style="{StaticResource FieldLabelStyle}" />
-                                            <TextBlock Text="{Binding StartedAtText}"
-                                                       Style="{StaticResource CardSummaryStyle}" />
-                                            <TextBlock Text="Ended"
-                                                       Style="{StaticResource FieldLabelStyle}"
-                                                       Margin="0,10,0,0" />
-                                            <TextBlock Text="{Binding EndedAtText}"
-                                                       Style="{StaticResource CardSummaryStyle}" />
-                                        </StackPanel>
+                                            <StackPanel Grid.Column="1" Margin="0,0,16,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding OrderCode}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource PackWatchTextBrush}" />
+                                                <TextBlock Text="{Binding CameraName}" Style="{StaticResource FieldHelpStyle}" Margin="0,4,0,0" />
+                                            </StackPanel>
 
-                                        <StackPanel Grid.Column="3"
-                                                    Margin="0,0,16,0"
-                                                    VerticalAlignment="Center">
-                                            <TextBlock Text="Duration"
-                                                       Style="{StaticResource FieldLabelStyle}" />
-                                            <TextBlock Text="{Binding DurationText}"
-                                                       FontSize="20"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{StaticResource PackWatchTextBrush}"
-                                                       Typography.NumeralAlignment="Tabular" />
-                                        </StackPanel>
+                                            <StackPanel Grid.Column="2" Margin="0,0,16,0" VerticalAlignment="Center">
+                                                <TextBlock Text="Started" Style="{StaticResource FieldLabelStyle}" />
+                                                <TextBlock Text="{Binding StartedAtText}" Style="{StaticResource CardSummaryStyle}" />
+                                                <TextBlock Text="Ended" Style="{StaticResource FieldLabelStyle}" Margin="0,10,0,0" />
+                                                <TextBlock Text="{Binding EndedAtText}" Style="{StaticResource CardSummaryStyle}" />
+                                            </StackPanel>
 
-                                        <StackPanel Grid.Column="4"
-                                                    Margin="0,0,16,0"
-                                                    VerticalAlignment="Center">
-                                            <TextBlock Text="Artifact"
-                                                       Style="{StaticResource FieldLabelStyle}" />
-                                            <TextBlock Text="{Binding ArtifactName}"
-                                                       Style="{StaticResource CardSummaryStyle}"
-                                                       TextWrapping="Wrap" />
-                                            <TextBlock Text="{Binding ArtifactPath}"
-                                                       Style="{StaticResource FieldHelpStyle}"
-                                                       Margin="0,4,0,0" />
-                                        </StackPanel>
+                                            <StackPanel Grid.Column="3" Margin="0,0,16,0" VerticalAlignment="Center">
+                                                <TextBlock Text="Duration" Style="{StaticResource FieldLabelStyle}" />
+                                                <TextBlock Text="{Binding DurationText}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PackWatchTextBrush}" Typography.NumeralAlignment="Tabular" />
+                                            </StackPanel>
 
-                                        <Button Grid.Column="5"
-                                                Content="Reveal"
-                                                Command="{Binding DataContext.RevealArtifactCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource SecondaryButtonStyle}"
-                                                VerticalAlignment="Center"
-                                                MinWidth="102" />
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                                            <StackPanel Grid.Column="4" Margin="0,0,16,0" VerticalAlignment="Center">
+                                                <TextBlock Text="Artifact" Style="{StaticResource FieldLabelStyle}" />
+                                                <TextBlock Text="{Binding ArtifactName}" Style="{StaticResource CardSummaryStyle}" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding ArtifactPath}" Style="{StaticResource FieldHelpStyle}" Margin="0,4,0,0" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Button Command="{Binding DataContext.OpenArtifactCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        MinWidth="40"
+                                                        Width="40"
+                                                        Height="40"
+                                                        Padding="0"
+                                                        ToolTip="Play video"
+                                                        Margin="0,0,8,0">
+                                                    <iconPacks:PackIconFontAwesome Kind="PlaySolid" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Button>
+                                                <Button Command="{Binding DataContext.RevealArtifactCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        MinWidth="40"
+                                                        Width="40"
+                                                        Height="40"
+                                                        Padding="0"
+                                                        ToolTip="Show in Explorer"
+                                                        Margin="0,0,8,0">
+                                                    <iconPacks:PackIconFontAwesome Kind="FolderOpenSolid" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Button>
+                                                <Button Command="{Binding DataContext.DeleteRecordCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource DangerButtonStyle}"
+                                                        MinWidth="40"
+                                                        Width="40"
+                                                        Height="40"
+                                                        Padding="0"
+                                                        ToolTip="Delete record">
+                                                    <iconPacks:PackIconFontAwesome Kind="TrashAltSolid" Width="14" Height="14" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Pagination Controls -->
+                    <Grid Grid.Row="1" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Command="{Binding PreviousPageCommand}"
+                                IsEnabled="{Binding HasPreviousPage}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                MinWidth="110">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconFontAwesome Kind="ChevronLeftSolid" Width="10" Height="10" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Previous" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding PageSummary}"
+                                   Foreground="{StaticResource PackWatchMutedTextBrush}"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+
+                        <!-- Quick Jump Box -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock Text="Go to" Foreground="{StaticResource PackWatchMutedTextBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBox Width="50" Height="36" Text="{Binding JumpPageInput, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" VerticalContentAlignment="Center">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding JumpToPageCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <TextBlock Text="page" Foreground="{StaticResource PackWatchMutedTextBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="3"
+                                Command="{Binding NextPageCommand}"
+                                IsEnabled="{Binding HasNextPage}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                MinWidth="110">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Next" VerticalAlignment="Center" />
+                                <iconPacks:PackIconFontAwesome Kind="ChevronRightSolid" Width="10" Height="10" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

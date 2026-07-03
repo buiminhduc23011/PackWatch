@@ -7,4 +7,6 @@ public interface IDesktopShellService
     bool OpenFolder(string path);
 
     bool RevealPath(string path);
+
+    bool OpenFile(string path);
 }

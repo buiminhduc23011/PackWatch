@@ -22,6 +22,7 @@ internal sealed class WindowsCameraService : ICameraService
     private CameraConnectionOptions? _currentOptions;
     private AppVideoFrame? _lastFrame;
     private DateTimeOffset _lastPreviewFrameAt = DateTimeOffset.MinValue;
+    private bool _isRecording;
 
     public event EventHandler<CameraFrameAvailableEventArgs>? FrameAvailable;
 
@@ -117,6 +118,41 @@ internal sealed class WindowsCameraService : ICameraService
         }
     }
 
+    public async Task StartRecordingAsync(string filePath, CancellationToken cancellationToken)
+    {
+        if (_mediaCapture is null)
+        {
+            throw new InvalidOperationException("The camera stream must be active to record a video.");
+        }
+
+        var folderPath = Path.GetDirectoryName(filePath);
+        var fileName = Path.GetFileName(filePath);
+        if (string.IsNullOrWhiteSpace(folderPath) || string.IsNullOrWhiteSpace(fileName))
+        {
+            throw new ArgumentException("A valid target video file path is required.", nameof(filePath));
+        }
+
+        Directory.CreateDirectory(folderPath);
+
+        var folder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(folderPath);
+        var storageFile = await folder.CreateFileAsync(fileName, Windows.Storage.CreationCollisionOption.ReplaceExisting);
+        var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD720p);
+
+        await _mediaCapture.StartRecordToStorageFileAsync(profile, storageFile).AsTask(cancellationToken);
+        _isRecording = true;
+    }
+
+    public async Task StopRecordingAsync(CancellationToken cancellationToken)
+    {
+        if (_mediaCapture is null || !_isRecording)
+        {
+            return;
+        }
+
+        await _mediaCapture.StopRecordAsync().AsTask(cancellationToken);
+        _isRecording = false;
+    }
+
     private async void HandleFrameArrived(MediaFrameReader sender, MediaFrameArrivedEventArgs args)
     {
         var now = DateTimeOffset.UtcNow;
@@ -167,6 +203,18 @@ internal sealed class WindowsCameraService : ICameraService
 
     private async Task CloseCoreAsync(CancellationToken cancellationToken)
     {
+        if (_isRecording)
+        {
+            try
+            {
+                await StopRecordingAsync(cancellationToken);
+            }
+            catch
+            {
+                // Ignored
+            }
+        }
+
         if (_frameReader is not null)
         {
             _frameReader.FrameArrived -= HandleFrameArrived;
