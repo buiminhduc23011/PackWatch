@@ -49,7 +49,7 @@ public sealed partial class SettingsPageViewModel : ObservableObject, INavigatio
 
     public IReadOnlyList<string> VideoFormatOptions { get; } = ["mp4", "mkv"];
 
-    public IReadOnlyList<string> RetentionOptions { get; } = ["30 days", "60 days", "90 days", "Never"];
+    public IReadOnlyList<string> RetentionOptions { get; } = ["30 days", "60 days", "90 days", "120 days", "Never"];
 
     public IReadOnlyList<string> LoggingLevelOptions { get; } = ["Verbose", "Information", "Warning", "Error"];
 
@@ -103,7 +103,7 @@ public sealed partial class SettingsPageViewModel : ObservableObject, INavigatio
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RetentionSummary))]
-    private string retentionPolicy = "90 days";
+    private string retentionPolicy = "120 days";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RoiSummary))]
@@ -160,9 +160,9 @@ public sealed partial class SettingsPageViewModel : ObservableObject, INavigatio
 
     public string CameraSourceSummary => IsRtspCamera
         ? string.IsNullOrWhiteSpace(RtspUrl)
-            ? "RTSP mode is selected. Add the stream URL below to use it as the shared source for live preview and recording."
-            : $"RTSP stream ready as the shared live and recording source: {RtspUrl}"
-        : $"Webcam device {WebcamDeviceIndex} is selected as the shared source for live preview and recording.";
+            ? string.Empty
+            : $"RTSP URL: {RtspUrl}"
+        : $"Webcam: device {WebcamDeviceIndex}";
 
     public string CameraQuickTestTitle => IsRtspCamera
         ? "Switch back to the laptop camera for desk checks"
@@ -193,6 +193,10 @@ public sealed partial class SettingsPageViewModel : ObservableObject, INavigatio
     public void OnNavigatedTo()
     {
         _ = LoadAsync();
+    }
+
+    public void OnNavigatedFrom()
+    {
     }
 
     partial void OnWebcamDeviceIndexChanged(int value)
@@ -494,7 +498,7 @@ public sealed partial class SettingsPageViewModel : ObservableObject, INavigatio
             ? 0
             : int.TryParse(retentionPolicy.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0], out var days)
                 ? days
-                : 90;
+                : 120;
     }
 
     private IReadOnlyList<BarcodeFormatKind> GetEnabledBarcodeTypes()

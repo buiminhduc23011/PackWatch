@@ -1,6 +1,7 @@
 using PackWatch.Application.Abstractions.History;
 using PackWatch.Domain.Entities;
 using System.Text.Json;
+using System.Threading;
 
 namespace PackWatch.Persistence.Services;
 
@@ -11,13 +12,16 @@ internal sealed class JsonHistoryService : IHistoryService, IOrderHistoryWriter
         WriteIndented = true
     };
 
+    private readonly SemaphoreSlim _lock = new(1, 1);
+    private List<PersistedOrderRecord>? _cache;
+
     public async Task<IReadOnlyList<OrderRecord>> SearchAsync(
         OrderHistoryQuery query,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var records = await LoadSnapshotsAsync(cancellationToken);
+        var records = await GetSnapshotsAsync(cancellationToken);
 
         var filtered = records
             .Where(record => string.IsNullOrWhiteSpace(query.OrderCode)
@@ -37,9 +41,18 @@ internal sealed class JsonHistoryService : IHistoryService, IOrderHistoryWriter
     {
         ArgumentNullException.ThrowIfNull(record);
 
-        var snapshots = await LoadSnapshotsAsync(cancellationToken);
-        snapshots.Add(PersistedOrderRecord.FromDomain(record));
-        await SaveSnapshotsAsync(snapshots, cancellationToken);
+        await _lock.WaitAsync(cancellationToken);
+        try
+        {
+            var snapshots = await GetSnapshotsInternalAsync(cancellationToken);
+            snapshots.Add(PersistedOrderRecord.FromDomain(record));
+            await SaveSnapshotsAsync(snapshots, cancellationToken);
+            _cache = snapshots;
+        }
+        finally
+        {
+            _lock.Release();
+        }
     }
 
     public async Task DeleteAsync(string videoPath, CancellationToken cancellationToken)
@@ -49,32 +62,71 @@ internal sealed class JsonHistoryService : IHistoryService, IOrderHistoryWriter
             return;
         }
 
-        var snapshots = await LoadSnapshotsAsync(cancellationToken);
-        var toRemove = snapshots.FirstOrDefault(s => s.VideoPath.Equals(videoPath, StringComparison.OrdinalIgnoreCase));
-        if (toRemove is not null)
+        await _lock.WaitAsync(cancellationToken);
+        try
         {
-            snapshots.Remove(toRemove);
-            await SaveSnapshotsAsync(snapshots, cancellationToken);
+            var snapshots = await GetSnapshotsInternalAsync(cancellationToken);
+            var toRemove = snapshots.FirstOrDefault(s => s.VideoPath.Equals(videoPath, StringComparison.OrdinalIgnoreCase));
+            if (toRemove is not null)
+            {
+                snapshots.Remove(toRemove);
+                await SaveSnapshotsAsync(snapshots, cancellationToken);
+                _cache = snapshots;
 
-            try
-            {
-                if (File.Exists(videoPath))
+                try
                 {
-                    File.Delete(videoPath);
+                    if (File.Exists(videoPath))
+                    {
+                        File.Delete(videoPath);
+                    }
+                    if (File.Exists(toRemove.ThumbnailPath))
+                    {
+                        File.Delete(toRemove.ThumbnailPath);
+                    }
                 }
-                if (File.Exists(toRemove.ThumbnailPath))
+                catch
                 {
-                    File.Delete(toRemove.ThumbnailPath);
+                    // Ignored
                 }
             }
-            catch
-            {
-                // Ignored
-            }
+        }
+        finally
+        {
+            _lock.Release();
         }
     }
 
-    private static async Task<List<PersistedOrderRecord>> LoadSnapshotsAsync(CancellationToken cancellationToken)
+    private async Task<List<PersistedOrderRecord>> GetSnapshotsAsync(CancellationToken cancellationToken)
+    {
+        if (_cache is not null)
+        {
+            return new List<PersistedOrderRecord>(_cache);
+        }
+
+        await _lock.WaitAsync(cancellationToken);
+        try
+        {
+            return await GetSnapshotsInternalAsync(cancellationToken);
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
+
+    private async Task<List<PersistedOrderRecord>> GetSnapshotsInternalAsync(CancellationToken cancellationToken)
+    {
+        if (_cache is not null)
+        {
+            return new List<PersistedOrderRecord>(_cache);
+        }
+
+        var snapshots = await LoadSnapshotsFromDiskAsync(cancellationToken);
+        _cache = new List<PersistedOrderRecord>(snapshots);
+        return snapshots;
+    }
+
+    private static async Task<List<PersistedOrderRecord>> LoadSnapshotsFromDiskAsync(CancellationToken cancellationToken)
     {
         var historyFilePath = LocalPackWatchPaths.HistoryFilePath;
 

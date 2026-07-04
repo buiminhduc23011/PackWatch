@@ -17,8 +17,10 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
     private readonly ISettingsService _settingsService;
     private readonly IDesktopShellService _desktopShellService;
     private readonly IAppStatusService _appStatusService;
+    private CancellationTokenSource? _searchDebounceCts;
 
     public ObservableCollection<HistoryRecordItem> Records { get; } = [];
+    public ObservableCollection<PageItem> PageItems { get; } = [];
 
     [ObservableProperty]
     private string searchOrderCode = string.Empty;
@@ -81,6 +83,50 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
         _ = RefreshAsync(announceStatus: false);
     }
 
+    public void OnNavigatedFrom()
+    {
+        _searchDebounceCts?.Cancel();
+        _searchDebounceCts?.Dispose();
+        _searchDebounceCts = null;
+    }
+
+    partial void OnSearchOrderCodeChanged(string value)
+    {
+        _searchDebounceCts?.Cancel();
+        _searchDebounceCts?.Dispose();
+        _searchDebounceCts = new CancellationTokenSource();
+
+        var token = _searchDebounceCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                // Wait for 400ms of inactivity
+                await Task.Delay(400, token);
+
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                var app = System.Windows.Application.Current;
+                if (app is not null)
+                {
+                    await app.Dispatcher.InvokeAsync(async () =>
+                    {
+                        CurrentPage = 1;
+                        await RefreshAsync(announceStatus: false, token);
+                    });
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Ignored
+            }
+        });
+    }
+
     [RelayCommand]
     private async Task SearchAsync(CancellationToken cancellationToken)
     {
@@ -119,6 +165,16 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
         else
         {
             JumpPageInput = CurrentPage.ToString();
+        }
+    }
+
+    [RelayCommand]
+    private async Task JumpToSpecificPageAsync(int pageNumber)
+    {
+        if (pageNumber >= 1 && pageNumber <= TotalPages)
+        {
+            CurrentPage = pageNumber;
+            await RefreshAsync(announceStatus: false);
         }
     }
 
@@ -208,6 +264,8 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
             if (CurrentPage < 1) CurrentPage = 1;
             JumpPageInput = CurrentPage.ToString();
 
+            UpdatePageItems();
+
             var pagedRecords = records
                 .Skip((CurrentPage - 1) * PageSize)
                 .Take(PageSize)
@@ -240,6 +298,57 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
         }
     }
 
+    private void UpdatePageItems()
+    {
+        PageItems.Clear();
+
+        if (TotalPages <= 1)
+        {
+            PageItems.Add(new PageItem("1", 1, true));
+            return;
+        }
+
+        if (TotalPages <= 7)
+        {
+            for (int i = 1; i <= TotalPages; i++)
+            {
+                PageItems.Add(new PageItem(i.ToString(), i, i == CurrentPage));
+            }
+        }
+        else
+        {
+            // Page 1 is always shown
+            PageItems.Add(new PageItem("1", 1, 1 == CurrentPage));
+
+            if (CurrentPage <= 4)
+            {
+                for (int i = 2; i <= 5; i++)
+                {
+                    PageItems.Add(new PageItem(i.ToString(), i, i == CurrentPage));
+                }
+                PageItems.Add(new PageItem("...", -1, false));
+                PageItems.Add(new PageItem(TotalPages.ToString(), TotalPages, false));
+            }
+            else if (CurrentPage >= TotalPages - 3)
+            {
+                PageItems.Add(new PageItem("...", -1, false));
+                for (int i = TotalPages - 4; i <= TotalPages; i++)
+                {
+                    PageItems.Add(new PageItem(i.ToString(), i, i == CurrentPage));
+                }
+            }
+            else
+            {
+                PageItems.Add(new PageItem("...", -1, false));
+                PageItems.Add(new PageItem((CurrentPage - 1).ToString(), CurrentPage - 1, false));
+                PageItems.Add(new PageItem(CurrentPage.ToString(), CurrentPage, true));
+                PageItems.Add(new PageItem((CurrentPage + 1).ToString(), CurrentPage + 1, false));
+                PageItems.Add(new PageItem("...", -1, false));
+                PageItems.Add(new PageItem(TotalPages.ToString(), TotalPages, false));
+            }
+        }
+    }
+
     private OrderHistoryQuery BuildQuery()
     {
         return new OrderHistoryQuery(SearchOrderCode, null, null);
@@ -252,8 +361,8 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
             OrderCode = record.OrderCode,
             BadgeText = BuildBadge(record.OrderCode),
             CameraName = record.CameraName,
-            StartedAtText = record.StartTime.LocalDateTime.ToString("dd MMM yyyy HH:mm"),
-            EndedAtText = record.EndTime?.LocalDateTime.ToString("dd MMM yyyy HH:mm") ?? "-",
+            StartedAtText = record.StartTime.LocalDateTime.ToString("dd MMM yyyy HH:mm:ss"),
+            EndedAtText = record.EndTime?.LocalDateTime.ToString("dd MMM yyyy HH:mm:ss") ?? "-",
             DurationText = record.Duration?.ToString(@"hh\:mm\:ss") ?? "-",
             ArtifactName = Path.GetFileName(record.VideoPath),
             ArtifactPath = record.VideoPath
@@ -270,5 +379,21 @@ public sealed partial class HistoryPageViewModel : ObservableObject, INavigation
         }
 
         return trimmed[^4..];
+    }
+}
+
+public sealed class PageItem
+{
+    public string Text { get; }
+    public int PageNumber { get; }
+    public bool IsCurrent { get; }
+    public bool IsEllipsis => Text == "...";
+    public bool IsSelectable => !IsCurrent && !IsEllipsis;
+
+    public PageItem(string text, int pageNumber, bool isCurrent)
+    {
+        Text = text;
+        PageNumber = pageNumber;
+        IsCurrent = isCurrent;
     }
 }

@@ -2,7 +2,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PackWatch.App.Navigation;
 using PackWatch.App.Services;
+using PackWatch.Application.Abstractions.Barcodes;
 using PackWatch.Application.Abstractions.Cameras;
+using PackWatch.Application.Abstractions.Media;
 using PackWatch.Application.Abstractions.Recording;
 using PackWatch.Application.Abstractions.Settings;
 using AppVideoFrame = PackWatch.Application.Abstractions.Media.VideoFrame;
@@ -22,10 +24,15 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
     private readonly IDesktopShellService _desktopShellService;
     private readonly IAppStatusService _appStatusService;
     private readonly ICameraService _cameraService;
+    private readonly IBarcodeService _barcodeService;
     private readonly DispatcherTimer _recordingTimer;
 
     private ApplicationSettings? _currentSettings;
     private RecordingSession? _currentSession;
+    private RecordingOptions? _cachedRecordingOptions;
+    private string? _activeBarcode;
+    private bool _isScanningBarcode;
+    private int _barcodeDetectionCount;
 
     [ObservableProperty]
     private string cameraStatus = "Loading validation profile...";
@@ -52,9 +59,6 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
     private string previewMessage = "Connecting the shared camera source...";
 
     [ObservableProperty]
-    private string orderCodeInput = string.Empty;
-
-    [ObservableProperty]
     private string detectedBarcodeInput = string.Empty;
 
     [ObservableProperty]
@@ -78,24 +82,36 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(StartCommand))]
     [NotifyCanExecuteChangedFor(nameof(StopCommand))]
-    [NotifyCanExecuteChangedFor(nameof(ConfirmBarcodeCommand))]
     [NotifyPropertyChangedFor(nameof(IdleStateVisibility))]
     [NotifyPropertyChangedFor(nameof(ActiveStateVisibility))]
     [NotifyPropertyChangedFor(nameof(StartButtonText))]
+    [NotifyPropertyChangedFor(nameof(ScanningVisibility))]
+    [NotifyPropertyChangedFor(nameof(RecordingBadgeVisibility))]
+    private bool isSessionActive;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StartButtonText))]
+    [NotifyPropertyChangedFor(nameof(ScanningVisibility))]
+    [NotifyPropertyChangedFor(nameof(RecordingBadgeVisibility))]
     private bool isRecording;
+
+    [ObservableProperty]
+    private string barcodeDetectionCountText = "0";
 
     public HomePageViewModel(
         ISettingsService settingsService,
         IRecordingService recordingService,
         IDesktopShellService desktopShellService,
         IAppStatusService appStatusService,
-        ICameraService cameraService)
+        ICameraService cameraService,
+        IBarcodeService barcodeService)
     {
         _settingsService = settingsService;
         _recordingService = recordingService;
         _desktopShellService = desktopShellService;
         _appStatusService = appStatusService;
         _cameraService = cameraService;
+        _barcodeService = barcodeService;
 
         _cameraService.FrameAvailable += HandleFrameAvailable;
 
@@ -104,8 +120,6 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
             Interval = TimeSpan.FromSeconds(1)
         };
         _recordingTimer.Tick += HandleRecordingTimerTick;
-
-        OrderCodeInput = CreateSuggestedOrderCode();
     }
 
     public Visibility SessionArtifactVisibility => string.IsNullOrWhiteSpace(SessionArtifactPath)
@@ -120,15 +134,40 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
         ? Visibility.Visible
         : Visibility.Collapsed;
 
-    public Visibility IdleStateVisibility => IsRecording ? Visibility.Collapsed : Visibility.Visible;
+    public Visibility IdleStateVisibility => IsSessionActive ? Visibility.Collapsed : Visibility.Visible;
 
-    public Visibility ActiveStateVisibility => IsRecording ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility ActiveStateVisibility => IsSessionActive ? Visibility.Visible : Visibility.Collapsed;
 
-    public string StartButtonText => IsRecording ? "Recording..." : "Start Session";
+    public Visibility ScanningVisibility => IsSessionActive && !IsRecording
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    public Visibility RecordingBadgeVisibility => IsRecording
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    public string StartButtonText => IsSessionActive
+        ? (IsRecording ? "Recording..." : "Scanning...")
+        : "Start Session";
 
     public void OnNavigatedTo()
     {
         _ = ActivateAsync();
+    }
+
+    public void OnNavigatedFrom()
+    {
+        if (IsSessionActive)
+        {
+            _ = StopAsync(CancellationToken.None);
+        }
+
+        if (_cameraService.IsOpen)
+        {
+            _ = _cameraService.CloseAsync(CancellationToken.None);
+        }
+
+        PreviewImage = null;
     }
 
     [RelayCommand(CanExecute = nameof(CanStart))]
@@ -153,89 +192,69 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
             return;
         }
 
-        var orderCode = string.IsNullOrWhiteSpace(OrderCodeInput)
-            ? CreateSuggestedOrderCode()
-            : OrderCodeInput.Trim();
-
-        var recordingOptions = new RecordingOptions(
+        // Cache recording options for reuse when switching barcodes.
+        _cachedRecordingOptions = new RecordingOptions(
             DescribeCameraSource(settings.Camera),
             settings.FramesPerSecond,
             settings.Resolution,
             settings.BitrateKbps,
             settings.VideoFormat);
 
-        _currentSession = await _recordingService.StartAsync(orderCode, recordingOptions, cancellationToken);
-
-        if (settings.Camera.SourceKind == CameraSourceKind.Webcam)
-        {
-            await _cameraService.StartRecordingAsync(_currentSession.VideoPath, cancellationToken);
-        }
-
-        IsRecording = true;
-        CurrentOrder = orderCode;
+        // Enter scanning mode — do NOT start recording yet.
+        IsSessionActive = true;
+        IsRecording = false;
+        _activeBarcode = null;
+        _isScanningBarcode = false;
+        _barcodeDetectionCount = 0;
+        BarcodeDetectionCountText = "0";
+        CurrentOrder = "-";
         LastBarcode = "-";
-        DetectedBarcodeInput = orderCode;
+        DetectedBarcodeInput = string.Empty;
         RecordingTime = "00:00:00";
-        RecordingStatus = "Recording session artifact";
+        RecordingStatus = "Scanning for barcode...";
         CameraStatus = BuildCameraStatus(settings.Camera, PreviewImage is not null);
         CameraSourceSummary = DescribeCameraSource(settings.Camera);
         PreviewMessage = PreviewImage is null
-            ? "Validation session is running. The selected source is active, but PackWatch has not received a visible frame yet."
+            ? "Session is active. Scanning for barcodes..."
             : PreviewMessage;
-        SessionArtifactPath = _currentSession.VideoPath;
-        SessionArtifactLabel = Path.GetFileName(_currentSession.VideoPath);
 
-        _recordingTimer.Start();
-        _appStatusService.SetStatus($"Session {orderCode} started. Recording artifact will be saved locally when you stop.");
+        _appStatusService.SetStatus("Session started. Show a barcode to the camera to begin recording.");
+        PlaySessionStartSound();
     }
 
     [RelayCommand(CanExecute = nameof(CanStop))]
     private async Task StopAsync(CancellationToken cancellationToken)
     {
-        if (_currentSession is null)
+        // If currently recording, save the final video.
+        if (_currentSession is not null && IsRecording)
         {
-            return;
-        }
+            if (_currentSettings?.Camera.SourceKind == CameraSourceKind.Webcam)
+            {
+                await _cameraService.StopRecordingAsync(cancellationToken);
+            }
 
-        if (_currentSettings?.Camera.SourceKind == CameraSourceKind.Webcam)
-        {
-            await _cameraService.StopRecordingAsync(cancellationToken);
-        }
+            var completedSession = await _recordingService.StopAsync(_currentSession, cancellationToken);
 
-        var completedSession = await _recordingService.StopAsync(_currentSession, cancellationToken);
+            SessionArtifactPath = completedSession.VideoPath;
+            SessionArtifactLabel = Path.GetFileName(completedSession.VideoPath);
+
+            _appStatusService.SetStatus($"Session {completedSession.OrderCode} saved to {completedSession.VideoPath}.");
+        }
 
         _recordingTimer.Stop();
         _currentSession = null;
+        _cachedRecordingOptions = null;
+        _activeBarcode = null;
+        _isScanningBarcode = false;
         IsRecording = false;
+        IsSessionActive = false;
         RecordingStatus = PreviewImage is null ? "Ready for validation" : "Live preview ready";
         CameraStatus = _currentSettings is null
             ? "Ready"
             : BuildCameraStatus(_currentSettings.Camera, PreviewImage is not null);
-        SessionArtifactPath = completedSession.VideoPath;
-        SessionArtifactLabel = Path.GetFileName(completedSession.VideoPath);
-        OrderCodeInput = CreateSuggestedOrderCode();
 
-        _appStatusService.SetStatus($"Session {completedSession.OrderCode} stopped and saved to {completedSession.VideoPath}.");
-    }
-
-    [RelayCommand(CanExecute = nameof(CanConfirmBarcode))]
-    private void ConfirmBarcode()
-    {
-        var barcodeValue = string.IsNullOrWhiteSpace(DetectedBarcodeInput)
-            ? CurrentOrder
-            : DetectedBarcodeInput.Trim();
-
-        LastBarcode = barcodeValue;
-        RecordingStatus = barcodeValue.Equals(CurrentOrder, StringComparison.OrdinalIgnoreCase)
-            ? "Barcode confirmed"
-            : "Barcode captured";
-        _appStatusService.SetStatus($"Barcode {barcodeValue} confirmed for session {CurrentOrder}.");
-    }
-
-    [RelayCommand]
-    private void UseSuggestedOrder()
-    {
-        OrderCodeInput = CreateSuggestedOrderCode();
+        _appStatusService.SetStatus("Session stopped.");
+        PlaySessionStopSound();
     }
 
     [RelayCommand]
@@ -276,11 +295,9 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
         _appStatusService.SetStatus("No saved artifact is available yet.");
     }
 
-    private bool CanStart() => !IsRecording;
+    private bool CanStart() => !IsSessionActive;
 
-    private bool CanStop() => IsRecording;
-
-    private bool CanConfirmBarcode() => IsRecording;
+    private bool CanStop() => IsSessionActive;
 
     private async Task ActivateAsync()
     {
@@ -317,16 +334,11 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
                 ? "No capture artifact yet."
                 : Path.GetFileName(SessionArtifactPath);
 
-            if (!IsRecording)
+            if (!IsSessionActive)
             {
                 CameraStatus = BuildCameraStatus(_currentSettings.Camera, PreviewImage is not null);
                 RecordingStatus = PreviewImage is null ? "Connecting preview" : "Live preview ready";
                 PreviewMessage = BuildIdlePreviewMessage(_currentSettings);
-            }
-
-            if (string.IsNullOrWhiteSpace(OrderCodeInput))
-            {
-                OrderCodeInput = CreateSuggestedOrderCode();
             }
 
             if (announceStatus)
@@ -361,7 +373,7 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
             PreviewMessage = "Connecting to the selected webcam...";
             await _cameraService.OpenAsync(settings.Camera, cancellationToken);
             CameraStatus = BuildCameraStatus(settings.Camera, hasLivePreview: false);
-            RecordingStatus = IsRecording ? RecordingStatus : "Waiting for first visible frame";
+            RecordingStatus = IsSessionActive ? RecordingStatus : "Waiting for first visible frame";
             _appStatusService.SetStatus($"Connected to webcam device {settings.Camera.DeviceIndex ?? 0}. Waiting for the first frame.");
         }
         catch (Exception exception)
@@ -396,13 +408,177 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
                 ? "Live preview active"
                 : BuildCameraStatus(_currentSettings.Camera, hasLivePreview: true);
 
-            if (!IsRecording)
+            if (!IsSessionActive)
             {
                 RecordingStatus = "Live preview ready";
             }
 
             PreviewMessage = "Live preview is active.";
         });
+
+        // Run barcode detection when session is active.
+        if (IsSessionActive && !_isScanningBarcode)
+        {
+            _ = ScanBarcodeFromFrameAsync(e.Frame);
+        }
+    }
+
+    private async Task ScanBarcodeFromFrameAsync(AppVideoFrame frame)
+    {
+        if (_currentSettings is null || _isScanningBarcode)
+        {
+            return;
+        }
+
+        _isScanningBarcode = true;
+
+        try
+        {
+            var options = new BarcodeDetectionOptions(
+                _currentSettings.BarcodeRegionOfInterest,
+                TimeSpan.FromMilliseconds(_currentSettings.BarcodeStableMilliseconds),
+                TimeSpan.FromMilliseconds(200),
+                _currentSettings.EnabledBarcodeFormats);
+
+            var result = await _barcodeService.DetectAsync(frame, options, CancellationToken.None);
+
+            if (result is null)
+            {
+                _isScanningBarcode = false;
+                return;
+            }
+
+            var detectedValue = result.Value.Trim();
+
+            if (string.IsNullOrWhiteSpace(detectedValue))
+            {
+                _isScanningBarcode = false;
+                return;
+            }
+
+            // Same barcode as active — ignore.
+            if (string.Equals(detectedValue, _activeBarcode, StringComparison.OrdinalIgnoreCase))
+            {
+                _isScanningBarcode = false;
+                return;
+            }
+
+            // New barcode detected — handle on UI thread.
+            var app = System.Windows.Application.Current;
+            if (app is null)
+            {
+                _isScanningBarcode = false;
+                return;
+            }
+
+            _ = app.Dispatcher.InvokeAsync(async () =>
+            {
+                try
+                {
+                    await HandleNewBarcodeDetectedAsync(detectedValue);
+                }
+                finally
+                {
+                    _isScanningBarcode = false;
+                }
+            });
+        }
+        catch
+        {
+            _isScanningBarcode = false;
+        }
+    }
+
+    private async Task HandleNewBarcodeDetectedAsync(string barcodeValue)
+    {
+        if (!IsSessionActive || _cachedRecordingOptions is null)
+        {
+            return;
+        }
+
+        // Play alert sound.
+        PlayBarcodeDetectedSound();
+
+        // If already recording, stop and save the current recording first.
+        if (IsRecording && _currentSession is not null)
+        {
+            if (_currentSettings?.Camera.SourceKind == CameraSourceKind.Webcam)
+            {
+                await _cameraService.StopRecordingAsync(CancellationToken.None);
+            }
+
+            var completedSession = await _recordingService.StopAsync(_currentSession, CancellationToken.None);
+
+            SessionArtifactPath = completedSession.VideoPath;
+            SessionArtifactLabel = Path.GetFileName(completedSession.VideoPath);
+
+            _recordingTimer.Stop();
+            _appStatusService.SetStatus($"Order {completedSession.OrderCode} saved. Switching to {barcodeValue}...");
+        }
+
+        // Start a new recording with the detected barcode as the order code.
+        _currentSession = await _recordingService.StartAsync(
+            barcodeValue,
+            _cachedRecordingOptions,
+            CancellationToken.None);
+
+        if (_currentSettings?.Camera.SourceKind == CameraSourceKind.Webcam)
+        {
+            await _cameraService.StartRecordingAsync(_currentSession.VideoPath, CancellationToken.None);
+        }
+
+        _activeBarcode = barcodeValue;
+        _barcodeDetectionCount++;
+        BarcodeDetectionCountText = _barcodeDetectionCount.ToString(CultureInfo.InvariantCulture);
+        IsRecording = true;
+        CurrentOrder = barcodeValue;
+        LastBarcode = barcodeValue;
+        DetectedBarcodeInput = barcodeValue;
+        RecordingTime = "00:00:00";
+        RecordingStatus = "Recording session artifact";
+        SessionArtifactPath = _currentSession.VideoPath;
+        SessionArtifactLabel = Path.GetFileName(_currentSession.VideoPath);
+
+        _recordingTimer.Start();
+        _appStatusService.SetStatus($"Recording started for order {barcodeValue}.");
+    }
+
+    private static void PlaySessionStartSound()
+    {
+        try
+        {
+            Console.Beep(800, 150);
+            Console.Beep(1200, 150);
+        }
+        catch
+        {
+            // Sound playback is optional.
+        }
+    }
+
+    private static void PlaySessionStopSound()
+    {
+        try
+        {
+            Console.Beep(600, 150);
+            Console.Beep(400, 200);
+        }
+        catch
+        {
+            // Sound playback is optional.
+        }
+    }
+
+    private static void PlayBarcodeDetectedSound()
+    {
+        try
+        {
+            Console.Beep(1000, 200);
+        }
+        catch
+        {
+            // Sound playback is optional.
+        }
     }
 
     private void HandleRecordingTimerTick(object? sender, EventArgs e)
@@ -473,10 +649,5 @@ public sealed partial class HomePageViewModel : ObservableObject, INavigationAwa
             : settings.Camera.RtspUri is null
                 ? "RTSP mode is selected, but the stream URL is still missing. Complete it in Settings or switch back to the laptop webcam."
                 : $"RTSP profile for {settings.Camera.RtspUri.Host} is ready. Embedded live preview is wired for the shared webcam source first.";
-    }
-
-    private static string CreateSuggestedOrderCode()
-    {
-        return $"TEST-{DateTime.Now:yyyyMMdd-HHmmss}";
     }
 }

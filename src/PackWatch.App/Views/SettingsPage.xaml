@@ -53,9 +53,7 @@
                                            Style="{StaticResource FieldLabelStyle}" />
                                 <ComboBox ItemsSource="{Binding CameraModes}"
                                           SelectedItem="{Binding CameraMode}"
-                                          Margin="0,0,0,10" />
-                                <TextBlock Text="{Binding CameraSourceSummary}"
-                                           Style="{StaticResource CardSummaryStyle}" />
+                                          Margin="0" />
                             </StackPanel>
                         </Border>
 
@@ -80,6 +78,7 @@
                                     <TextBlock Text="RTSP URL"
                                                Style="{StaticResource FieldLabelStyle}" />
                                     <TextBox Text="{Binding RtspUrl, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="34" Padding="8,4"
                                              Margin="0,0,0,14" />
 
                                     <Grid>
@@ -92,13 +91,15 @@
                                         <StackPanel Grid.Column="0">
                                             <TextBlock Text="Username"
                                                        Style="{StaticResource FieldLabelStyle}" />
-                                            <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                                                     Height="34" Padding="8,4" />
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="2">
                                             <TextBlock Text="Password"
                                                        Style="{StaticResource FieldLabelStyle}" />
-                                            <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
+                                                     Height="34" Padding="8,4" />
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
@@ -119,12 +120,14 @@
                                     </Grid.ColumnDefinitions>
 
                                     <TextBox Grid.Column="0"
-                                             Text="{Binding SaveFolder, UpdateSourceTrigger=PropertyChanged}" />
+                                             Text="{Binding SaveFolder, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="34" Padding="8,4" />
 
                                     <Button Grid.Column="2"
                                             Content="Open"
                                             Command="{Binding OpenSaveFolderCommand}"
                                             Style="{StaticResource SecondaryButtonStyle}"
+                                            Height="34" MinHeight="0"
                                             MinWidth="80" />
                                 </Grid>
                             </StackPanel>

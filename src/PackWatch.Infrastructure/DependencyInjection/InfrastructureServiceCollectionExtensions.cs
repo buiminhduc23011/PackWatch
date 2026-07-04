@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PackWatch.Application.Abstractions.Barcodes;
 using PackWatch.Application.Abstractions.Cameras;
 using PackWatch.Infrastructure.Services;
 
@@ -14,6 +15,7 @@ public static class InfrastructureServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configuration);
 
         services.AddSingleton<ICameraService, WindowsCameraService>();
+        services.AddSingleton<IBarcodeService, ZXingBarcodeService>();
 
         return services;
     }

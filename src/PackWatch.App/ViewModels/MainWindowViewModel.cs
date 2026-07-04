@@ -58,6 +58,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     private void ActivateCurrentPage(ApplicationPage page)
     {
+        if (CurrentPageViewModel is INavigationAware oldNavigationAware && SelectedPage != page)
+        {
+            oldNavigationAware.OnNavigatedFrom();
+        }
+
         SelectedPage = page;
         CurrentPageViewModel = _pageViewModelFactory.Create(page);
 

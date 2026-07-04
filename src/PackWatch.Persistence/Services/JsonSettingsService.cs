@@ -59,7 +59,7 @@ internal sealed class JsonSettingsService : ISettingsService
             Resolution: "1920x1080",
             BitrateKbps: 6000,
             VideoFormat: "mp4",
-            RetentionDays: 90,
+            RetentionDays: 120,
             BarcodeRegionOfInterest: new FrameRegion(120, 120, 720, 260),
             BarcodeStableMilliseconds: 750,
             EnabledBarcodeFormats:
